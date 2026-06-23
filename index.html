@@ -285,7 +285,8 @@ tr:hover td{background:var(--bg2);}
   </div>
 </div></div>
 
-<script>function renderCoachingAnsicht(){
+<script>
+function renderCoachingAnsicht(){
   var ma=document.getElementById('mainArea');if(!ma)return;
   var heute=today(),hD=new Date(heute+'T00:00:00');
   var liste=employees.filter(function(e){return e.active!==false;});
@@ -297,85 +298,153 @@ tr:hover td{background:var(--bg2);}
   });
   all.sort(function(a,b){return b.d.localeCompare(a.d);});
   var gep=all.filter(function(x){return x.d>=heute&&x.s==='geplant';}).sort(function(a,b){return a.d.localeCompare(b.d);});
-  var let7=all.filter(function(x){return x.d<heute||x.s==='abgeschlossen';}).slice(0,7);
+  var abg=all.filter(function(x){return x.s==='abgeschlossen';});
   function ec(id){var e=employees.find(function(x){return x.id===id;});return e?COLORS[e.color%COLORS.length]:{bg:'#EEEDFE',text:'#3C3489'};}
-  function dl(d){var dt=new Date(d+'T00:00:00'),m=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];return dt.getDate()+'. '+m[dt.getMonth()];}
-  function td(d){var df=Math.round((new Date(d+'T00:00:00')-hD)/86400000);return df===0?'Heute':df===1?'Morgen':df<0?Math.abs(df)+'d her':'in '+df+'d';}
-  function kal(){
-    var k='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px">';
-    ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(function(t){k+='<div style="font-size:10px;font-weight:600;color:var(--text3);text-align:center">'+t+'</div>';});
-    k+='</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">';
+  function wday(d){return new Date(d+'T00:00:00').toLocaleDateString('de-DE',{weekday:'short'});}
+  function mday(d){var dt=new Date(d+'T00:00:00'),m=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];return dt.getDate()+'. '+m[dt.getMonth()];}
+  function tdiff(d){var df=Math.round((new Date(d+'T00:00:00')-hD)/86400000);return df===0?'Heute':df===1?'Morgen':df<0?Math.abs(df)+'d her':'in '+df+'d';}
+  function sessIn(days){var cut=new Date(hD);cut.setDate(cut.getDate()-days);var cs=cut.toISOString().slice(0,10);return abg.filter(function(x){return x.d>=cs&&x.d<=heute;}).length;}
+  var s7=sessIn(7),s14=sessIn(14),s30=sessIn(30);
+
+  // Sparkline-Daten 30 Tage
+  var spark=[];
+  for(var i=29;i>=0;i--){var dt=new Date(hD);dt.setDate(dt.getDate()-i);var ds=dt.toISOString().slice(0,10);spark.push({d:ds,n:abg.filter(function(x){return x.d===ds;}).length,label:dt.getDate()+'.'});}
+  var maxN=Math.max.apply(null,spark.map(function(x){return x.n;}))||1;
+
+  function buildChart(){
+    var W=560,H=80,bw=Math.floor(W/30)-2;
+    var s='<svg viewBox="0 0 '+W+' '+(H+22)+'" width="100%" style="display:block">';
+    s+='<line x1="0" y1="'+H+'" x2="'+W+'" y2="'+H+'" stroke="var(--border)" stroke-width="0.5"/>';
+    spark.forEach(function(d,i){
+      var x=i*(bw+2),bh=d.n>0?Math.max(4,Math.round(d.n/maxN*H)):0,y=H-bh;
+      var r2=d.n>0?abg.find(function(x){return x.d===d.d;}):null;
+      var col=r2&&r2.r&&RS[r2.r]?RS[r2.r].color:'#534AB7';
+      if(d.d===heute){s+='<rect x="'+x+'" y="0" width="'+bw+'" height="'+H+'" fill="#534AB7" opacity="0.06" rx="2"/>';}
+      if(d.n>0){
+        s+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bh+'" rx="2" fill="'+col+'" opacity="0.85"/>';
+        if(d.n>1){s+='<text x="'+(x+bw/2)+'" y="'+(y-3)+'" text-anchor="middle" font-size="8" fill="var(--text2)">'+d.n+'</text>';}
+      }
+      if(i===0||i===6||i===13||i===20||i===29){s+='<text x="'+(x+bw/2)+'" y="'+(H+14)+'" text-anchor="middle" font-size="8" fill="var(--text3)">'+d.label+'</text>';}
+    });
+    s+='</svg>';
+    return s;
+  }
+
+  function buildKal(){
+    var k='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px">';
+    ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(function(t){k+='<div style="font-size:9px;font-weight:600;color:var(--text3);text-align:center">'+t+'</div>';});
+    k+='</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">';
     var off=hD.getDay();off=off===0?6:off-1;
-    for(var i=0;i<off;i++)k+='<div></div>';
+    for(var i2=0;i2<off;i2++)k+='<div></div>';
     for(var d=0;d<30;d++){
       var dt=new Date(hD);dt.setDate(dt.getDate()+d);
       var ds=dt.toISOString().slice(0,10),isH=ds===heute;
       var sg=all.filter(function(x){return x.d===ds&&x.s==='geplant';});
       var sa=all.filter(function(x){return x.d===ds&&x.s!=='geplant';});
-      k+='<div data-d="'+ds+'" onclick="kalKlick(this.dataset.d)" style="cursor:pointer;border:1px solid '+(isH?'var(--purple)':'var(--border)')+';background:'+(isH?'var(--purple-bg)':'var(--bg)')+';border-radius:5px;padding:4px;min-height:46px">';
-      k+='<div style="font-size:11px;font-weight:'+(isH?700:400)+';color:'+(isH?'var(--purple)':'var(--text)')+';margin-bottom:2px">'+dt.getDate()+'</div>';
-      sg.slice(0,2).forEach(function(x){var c=ec(x.eid);k+='<div style="font-size:9px;background:'+c.bg+';color:'+c.text+';border-radius:2px;padding:1px 3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">'+x.en.split(' ')[0]+'</div>';});
-      sa.slice(0,3).forEach(function(x){var r2=x.r?RS[x.r]:null;k+='<span style="width:6px;height:6px;border-radius:50%;background:'+(r2?r2.bg:'var(--bg3)')+';display:inline-block;margin-right:1px"></span>';});
+      var bdrCol=isH?'var(--purple)':'var(--border)';
+      var bgCol=isH?'var(--purple-bg)':'var(--bg)';
+      var fwt=isH?600:400;
+      var ftCol=isH?'var(--purple)':'var(--text)';
+      k+='<div data-d="'+ds+'" onclick="kalKlick(this.dataset.d)" style="cursor:pointer;border:1px solid '+bdrCol+';background:'+bgCol+';border-radius:4px;padding:3px;min-height:40px">';
+      k+='<div style="font-size:10px;font-weight:'+fwt+';color:'+ftCol+';margin-bottom:1px">'+dt.getDate()+'</div>';
+      sg.slice(0,1).forEach(function(x){var c=ec(x.eid);k+='<div style="font-size:8px;background:'+c.bg+';color:'+c.text+';border-radius:2px;padding:1px 2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">'+x.en.split(' ')[0]+'</div>';});
+      sa.slice(0,2).forEach(function(x){var r2=x.r?RS[x.r]:null;k+='<span style="width:5px;height:5px;border-radius:50%;background:'+(r2?r2.bg:'var(--bg3)')+';display:inline-block;margin-right:1px"></span>';});
       k+='</div>';
     }
     return k+'</div>';
   }
-  var h='<div class="topbar"><div class="tb-left"><div style="width:40px;height:40px;border-radius:50%;background:var(--purple-bg);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:17px"><i class="ti ti-calendar-event"></i></div>'+
-    '<div><div class="tb-name">SFP Coaching</div><div class="tb-meta">'+liste.length+' Mitarbeiter · '+gep.length+' geplant · '+let7.length+' letzte</div></div></div>'+
+
+  var h='<div class="topbar"><div class="tb-left">'+
+    '<div style="width:40px;height:40px;border-radius:50%;background:var(--purple-bg);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:17px"><i class="ti ti-calendar-event"></i></div>'+
+    '<div><div class="tb-name">SFP Coaching</div><div class="tb-meta">'+liste.length+' Mitarbeiter · '+gep.length+' geplant · '+abg.length+' abgeschlossen</div></div></div>'+
     '<button class="btn btn-primary" onclick="openSessionModal(0)"><i class="ti ti-plus"></i> Session planen</button></div><div class="content">';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">';
-  h+='<div><div class="sec-title" style="margin-bottom:10px">Geplante Sessions</div>';
-  if(!gep.length){h+='<div class="card" style="text-align:center;color:var(--text3);padding:24px"><i class="ti ti-calendar-off" style="font-size:24px;display:block;margin-bottom:6px"></i>Keine Sessions geplant</div>';}
-  else{h+='<div style="display:flex;flex-direction:column;gap:8px">';
-    gep.forEach(function(x){var c=ec(x.eid),df=Math.round((new Date(x.d+'T00:00:00')-hD)/86400000),dt2=new Date(x.d+'T00:00:00');
-      h+='<div style="background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--purple);border-radius:var(--r-lg);padding:10px 12px;display:flex;align-items:center;gap:10px">';
-      h+='<div style="min-width:40px;text-align:center;background:var(--purple-bg);border-radius:var(--r-md);padding:4px 6px"><div style="font-size:10px;font-weight:600;color:var(--purple)">'+dt2.toLocaleDateString('de-DE',{weekday:'short'})+'</div><div style="font-size:17px;font-weight:700;color:var(--purple);line-height:1.1">'+dt2.getDate()+'</div></div>';
-      h+='<div style="flex:1"><div style="display:flex;align-items:center;gap:7px;margin-bottom:3px"><div class="av" style="width:22px;height:22px;font-size:9px;background:'+c.bg+';color:'+c.text+'">'+ini(x.en)+'</div><span style="font-weight:500;font-size:13px">'+x.en+'</span><span style="font-size:11px;color:'+(df<=1?'var(--amber)':'var(--text3)')+'">'+td(x.d)+'</span></div><div style="font-size:12px;color:var(--text2)">'+(x.t||'Coaching')+(x.f?' · '+x.f:'')+'</div></div>';
-      h+='<button class="btn btn-sm" data-id="'+x.eid+'" data-d="'+x.d+'" data-f="'+x.f.replace(/[<>"]/g,'')+'" onclick="emailSession(parseInt(this.dataset.id),this.dataset.d,this.dataset.f)" title="E-Mail" style="padding:5px 8px"><i class="ti ti-mail"></i></button>';
+
+  // ZEILE 1: Stats + Graph
+  h+='<div style="display:grid;grid-template-columns:repeat(3,auto) 1fr;gap:12px;margin-bottom:16px">';
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-top:3px solid var(--purple);border-radius:var(--r-lg);padding:14px 18px">'+
+    '<div style="font-size:10px;font-weight:600;color:var(--purple);margin-bottom:4px;letter-spacing:.05em">7 TAGE</div>'+
+    '<div style="font-size:30px;font-weight:700;color:var(--purple);line-height:1">'+s7+'</div>'+
+    '<div style="font-size:11px;color:var(--text2);margin-top:2px">Sessions</div></div>';
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-top:3px solid var(--teal);border-radius:var(--r-lg);padding:14px 18px">'+
+    '<div style="font-size:10px;font-weight:600;color:var(--teal);margin-bottom:4px;letter-spacing:.05em">14 TAGE</div>'+
+    '<div style="font-size:30px;font-weight:700;color:var(--teal);line-height:1">'+s14+'</div>'+
+    '<div style="font-size:11px;color:var(--text2);margin-top:2px">Sessions</div></div>';
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-top:3px solid var(--blue);border-radius:var(--r-lg);padding:14px 18px">'+
+    '<div style="font-size:10px;font-weight:600;color:var(--blue);margin-bottom:4px;letter-spacing:.05em">30 TAGE</div>'+
+    '<div style="font-size:30px;font-weight:700;color:var(--blue);line-height:1">'+s30+'</div>'+
+    '<div style="font-size:11px;color:var(--text2);margin-top:2px">Sessions</div></div>';
+  h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px">'+
+    '<div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:8px;letter-spacing:.05em">SESSION-VERLAUF – 30 TAGE</div>'+
+    buildChart()+'</div>';
+  h+='</div>';
+
+  // ZEILE 2: Geplante | Team-Status
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+  h+='<div><div class="sec-title" style="margin-bottom:10px">Geplante Sessions'+(gep.length?' <span style="background:var(--purple-bg);color:var(--purple);font-size:11px;padding:1px 7px;border-radius:20px">'+gep.length+'</span>':'')+'</div>';
+  if(!gep.length){
+    h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center;color:var(--text3)"><i class="ti ti-calendar-off" style="font-size:28px;display:block;margin-bottom:8px"></i>Keine Sessions geplant<div style="margin-top:10px"><button class="btn btn-sm btn-primary" onclick="openSessionModal(0)"><i class="ti ti-plus"></i> Jetzt planen</button></div></div>';
+  } else {
+    h+='<div style="display:flex;flex-direction:column;gap:8px">';
+    gep.forEach(function(x){
+      var c=ec(x.eid),dt2=new Date(x.d+'T00:00:00'),df=Math.round((dt2-hD)/86400000);
+      h+='<div style="background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--purple);border-radius:var(--r-lg);padding:10px 14px;display:flex;align-items:center;gap:12px">';
+      h+='<div style="min-width:44px;text-align:center;background:var(--purple-bg);border-radius:var(--r-md);padding:5px 7px"><div style="font-size:10px;font-weight:600;color:var(--purple)">'+wday(x.d)+'</div><div style="font-size:20px;font-weight:700;color:var(--purple);line-height:1">'+dt2.getDate()+'</div></div>';
+      h+='<div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><div class="av" style="width:24px;height:24px;font-size:9px;background:'+c.bg+';color:'+c.text+'">'+ini(x.en)+'</div><span style="font-weight:600;font-size:13px">'+x.en+'</span><span style="font-size:10px;padding:1px 6px;border-radius:20px;background:'+(df<=1?'var(--amber-bg)':'var(--bg2)')+';color:'+(df<=1?'var(--amber-dark)':'var(--text2)')+'">'+tdiff(x.d)+'</span></div><div style="font-size:12px;color:var(--text2)">'+(x.t||'Coaching')+(x.f?' · '+x.f:'')+'</div></div>';
+      h+='<button class="btn btn-sm" data-id="'+x.eid+'" data-d="'+x.d+'" data-f="'+x.f.replace(/[<>"]/g,'')+'" onclick="emailSession(parseInt(this.dataset.id),this.dataset.d,this.dataset.f)" title="Termin-E-Mail" style="padding:6px 8px"><i class="ti ti-mail"></i></button>';
       h+='</div>';
-    });h+='</div>';}
+    });
+    h+='</div>';
+  }
   h+='</div>';
-  h+='<div><div class="sec-title" style="margin-bottom:10px">Kalender – 30 Tage <span style="font-weight:400;color:var(--text3)">· Klick = planen</span></div>'+
-    '<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px">'+kal()+
-    '<div style="margin-top:8px;display:flex;gap:10px">'+
-    '<span style="font-size:10px;color:var(--text2);display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;border:1px solid var(--purple);background:var(--purple-bg);display:inline-block"></span>Heute</span>'+
-    '<span style="font-size:10px;color:var(--text2);display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#EEEDFE;display:inline-block"></span>Geplant</span>'+
-    '<span style="font-size:10px;color:var(--text2);display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#9FE1CB;display:inline-block"></span>Abgeschlossen</span>'+
-    '</div></div></div>';
-  h+='</div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">';
-  h+='<div><div class="sec-title" style="margin-bottom:10px">Letzte Sessions</div>';
-  if(!let7.length){h+='<div class="card" style="text-align:center;color:var(--text3);padding:20px">Noch keine Sessions</div>';}
-  else{h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">';
-    let7.forEach(function(x,i){var c=ec(x.eid),r2=x.r?RS[x.r]:null;
-      h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;'+(i?'border-top:1px solid var(--border)':'')+';cursor:pointer" onclick="selectEmp('+x.eid+')">';
-      h+='<div class="av" style="width:30px;height:30px;font-size:10px;background:'+c.bg+';color:'+c.text+';flex-shrink:0">'+ini(x.en)+'</div>';
-      h+='<div style="flex:1"><div style="font-size:13px;font-weight:500">'+x.en+'</div><div style="font-size:11px;color:var(--text2)">'+(x.f||x.t||'Session')+'</div></div>';
-      h+='<div style="text-align:right">'+(r2?'<span class="badge" style="background:'+r2.bg+';color:'+r2.color+'">'+x.r+'</span>':'<span style="color:var(--text3)">—</span>')+'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+dl(x.d)+'</div></div>';
-      h+='</div>';
-    });h+='</div>';}
-  h+='</div>';
+
   h+='<div><div class="sec-title" style="margin-bottom:10px">Team-Status</div><div style="display:flex;flex-direction:column;gap:6px">';
-  liste.forEach(function(emp){var c=ec(emp.id),tage=tageSeitLetzterSession(emp.id),na=naechsteGeplanteSession(emp.id),al=checkAlerts(emp.id),lb=lastRating(emp.id),lr=lb?RS[lb]:null,af=aufmerksamkeitFarbe(tage);
-    h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:9px 12px;display:flex;align-items:center;gap:9px;cursor:pointer" onclick="selectEmp('+emp.id+')">';
-    h+='<div class="av" style="width:32px;height:32px;font-size:11px;background:'+c.bg+';color:'+c.text+'">'+ini(emp.name)+'</div>';
-    h+='<div style="flex:1"><div style="font-size:13px;font-weight:500">'+emp.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:11px;color:var(--amber);margin-left:4px"></i>':'')+'</div><div style="font-size:11px;color:var(--text2)">'+emp.phase+(na?' · <span style="color:var(--purple);font-weight:500">'+fd(na)+'</span>':' · <span style="color:var(--text3)">Keine geplant</span>')+'</div></div>';
-    h+='<div style="display:flex;align-items:center;gap:6px"><div style="text-align:center;min-width:38px"><div style="font-size:12px;font-weight:600;color:'+af+'">'+(tage===null?'—':tage+'d')+'</div><div style="font-size:9px;color:var(--text3)">letzte</div></div>'+(lr?'<span class="badge" style="background:'+lr.bg+';color:'+lr.color+';font-size:10px">'+lb+'</span>':'<span style="font-size:11px;color:var(--text3)">—</span>')+'<button class="btn btn-sm btn-primary" data-id="'+emp.id+'" onclick="event.stopPropagation();openSessionModal(parseInt(this.dataset.id))" style="padding:3px 7px;font-size:11px"><i class="ti ti-calendar-plus"></i></button></div>';
+  liste.forEach(function(emp){
+    var c=ec(emp.id),tage=tageSeitLetzterSession(emp.id),na=naechsteGeplanteSession(emp.id);
+    var al=checkAlerts(emp.id),lb=lastRating(emp.id),lr=lb?RS[lb]:null,af=aufmerksamkeitFarbe(tage);
+    var empSess=abg.filter(function(x){return x.eid===emp.id;}).length;
+    h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="selectEmp('+emp.id+')">';
+    h+='<div class="av" style="width:34px;height:34px;font-size:12px;background:'+c.bg+';color:'+c.text+'">'+ini(emp.name)+'</div>';
+    h+='<div style="flex:1"><div style="font-size:13px;font-weight:500">'+emp.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:11px;color:var(--amber);margin-left:5px"></i>':'')+'</div><div style="font-size:11px;color:var(--text2)">'+emp.phase+(na?' · <span style="color:var(--purple);font-weight:600">'+fd(na)+'</span>':' · <span style="color:var(--text3)">Keine geplant</span>')+'</div></div>';
+    h+='<div style="display:flex;align-items:center;gap:8px"><div style="text-align:center;background:var(--bg2);border-radius:var(--r-sm);padding:3px 8px"><div style="font-size:13px;font-weight:700;color:var(--purple)">'+empSess+'</div><div style="font-size:9px;color:var(--text3)">Sessions</div></div><div style="text-align:center;min-width:36px"><div style="font-size:12px;font-weight:600;color:'+af+'">'+(tage===null?'—':tage+'d')+'</div><div style="font-size:9px;color:var(--text3)">letzte</div></div>'+(lr?'<span class="badge" style="background:'+lr.bg+';color:'+lr.color+';font-size:10px">'+lb+'</span>':'<span style="font-size:11px;color:var(--text3)">—</span>')+'<button class="btn btn-sm btn-primary" data-id="'+emp.id+'" onclick="event.stopPropagation();openSessionModal(parseInt(this.dataset.id))" style="padding:4px 8px"><i class="ti ti-calendar-plus"></i></button></div>';
     h+='</div>';
   });
-  h+='</div></div></div></div>';
+  h+='</div></div></div>';
+
+  // ZEILE 3: Letzte Sessions | Kalender
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">';
+  var let7=abg.slice(0,7);
+  h+='<div><div class="sec-title" style="margin-bottom:10px">Letzte Sessions</div>';
+  if(!let7.length){h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;text-align:center;color:var(--text3)">Noch keine Sessions</div>';}
+  else{
+    h+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">';
+    let7.forEach(function(x,i){var c=ec(x.eid),r2=x.r?RS[x.r]:null;
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;'+(i?'border-top:1px solid var(--border)':'')+';cursor:pointer" onclick="selectEmp('+x.eid+')">';
+      h+='<div class="av" style="width:30px;height:30px;font-size:10px;background:'+c.bg+';color:'+c.text+';flex-shrink:0">'+ini(x.en)+'</div>';
+      h+='<div style="flex:1"><div style="font-size:13px;font-weight:500">'+x.en+'</div><div style="font-size:11px;color:var(--text2)">'+(x.f||x.t||'Session')+'</div></div>';
+      h+='<div style="text-align:right">'+(r2?'<span class="badge" style="background:'+r2.bg+';color:'+r2.color+'">'+x.r+'</span>':'<span style="color:var(--text3)">—</span>')+'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+mday(x.d)+'</div></div>';
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  h+='<div><div class="sec-title" style="margin-bottom:10px">Kalender – 30 Tage <span style="font-weight:400;font-size:12px;color:var(--text3)">· Klick = planen</span></div>'+
+    '<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'+buildKal()+
+    '<div style="margin-top:8px;display:flex;gap:10px"><span style="font-size:10px;color:var(--text2);display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;border:1px solid var(--purple);background:var(--purple-bg);display:inline-block"></span>Heute</span><span style="font-size:10px;color:var(--text2);display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#EEEDFE;display:inline-block"></span>Geplant</span><span style="font-size:10px;color:var(--text2);display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#9FE1CB;display:inline-block"></span>Abgeschlossen</span></div></div></div>';
+  h+='</div></div>';
   ma.innerHTML=h;
 }
+
 function kalKlick(d){openSessionModal(0);setTimeout(function(){var el=document.getElementById('sessionDatum');if(el)el.value=d;},50);}
+
 function emailSession(eid,datum,fokus){
   var emp=employees.find(function(e){return e.id===eid;});if(!emp)return;
   var dt=new Date(datum+'T00:00:00');
   var wt=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
   var mt=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
   var datTxt=wt[dt.getDay()]+', den '+dt.getDate()+'. '+mt[dt.getMonth()];
+  var nl='%0A';
   var sub=encodeURIComponent('Coaching-Session: '+datTxt);
-  var bod=encodeURIComponent('Hallo '+emp.name.split(' ')[0]+',\n\nfür unsere nächste Coaching-Session habe ich folgenden Termin vorgesehen:\n\nDatum: '+datTxt+'\n'+(fokus?'Thema: '+fokus+'\n':'')+
-    '\nBitte gib mir kurz Bescheid ob dieser Termin passt.\n\nViele Grüße');
+  var bod='Hallo '+encodeURIComponent(emp.name.split(' ')[0])+','+nl+nl+'Datum: '+encodeURIComponent(datTxt)+nl+(fokus?'Thema: '+encodeURIComponent(fokus)+nl:'')+nl+'Bitte bestätige den Termin.'+nl+nl+'Viele Grüße';
   window.location.href='mailto:?subject='+sub+'&body='+bod;
 }
 
