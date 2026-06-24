@@ -305,6 +305,7 @@ tr:hover td{background:var(--bg2);}
   </div>
 </div></div>
 
+
 <script>function renderCoachingAnsicht(){
   var ma=document.getElementById('mainArea');if(!ma)return;
   var heute=today(),hD=new Date(heute+'T00:00:00');
@@ -940,12 +941,23 @@ function buildGroupedCards(list,days){
   return h;
 }
 
+
+function setTeamFilter(key){
+  teamFilter=key;
+  renderMain();
+}
+
 function renderTeam(){
   var ma=document.getElementById('mainArea');
   if(!ma)return;
   var days=teamRange||7;
   var HIDDEN=['SDM','SC'];
-  var list=activeEmployees().filter(function(e){return HIDDEN.indexOf(e.team)<0;});
+  var list=activeEmployees().filter(function(e){
+    if(HIDDEN.indexOf(e.team)>=0)return false;
+    if(teamFilter==='ALL')return true;
+    if(teamFilter==='INAKTIV')return e.active===false;
+    return e.team===teamFilter;
+  });
   var allP=list.map(function(e){return getPerf(e.id,days);}).reduce(function(a,b){return a.concat(b);},[]);
   function tAvg(key){if(!allP.length)return null;return allP.reduce(function(a,x){return a+x[key];},0)/allP.length;}
   var totalAlerts=list.reduce(function(a,e){return a+checkAlerts(e.id).length;},0);
