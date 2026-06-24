@@ -190,12 +190,7 @@ tr:hover td{background:var(--bg2);}
 .chart-toggle button{padding:6px 13px;font-size:12px;font-weight:500;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;}
 .chart-toggle button.active{background:var(--purple);color:#fff;}
 .empty{text-align:center;padding:3rem 1rem;color:var(--text2);}
-
-.sb-group-header{display:flex;align-items:center;gap:6px;padding:6px 12px 4px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;user-select:none;margin-top:4px;}
-.sb-group-header:hover{color:var(--text2);}
-.sb-group-arrow{margin-left:auto;transition:transform .2s;font-size:11px;}
-.sb-group-header.collapsed .sb-group-arrow{transform:rotate(-90deg);}
-.sb-group-body{overflow:hidden;transition:max-height .25s ease;}</style>
+</style>
 </head>
 <body>
 <div id="stg-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#BA7517;color:#fff;text-align:center;padding:6px 12px;font-size:12px;font-weight:600;font-family:inherit">⚠ STAGING · <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#fff;text-decoration:underline">→ Live</a></div><style>#stg-banner~*{margin-top:32px!important}.sidebar{top:32px!important;height:calc(100vh - 32px)!important}</style>
@@ -726,57 +721,21 @@ function renderSidebar(){
   if(view==='team')document.getElementById('nav-team').classList.add('active');
   var nc=document.getElementById('nav-coaching');if(nc)nc.classList.toggle('active',view==='coaching');
   if(view==='settings')document.getElementById('nav-settings').classList.add('active');
-  var HIDDEN=['SDM','SC'];
-  var visible=employees.filter(function(e){return e.active!==false&&HIDDEN.indexOf(e.team)<0;});
-  var groups=[
-    {key:'SE',label:'Sales Executives',members:visible.filter(function(e){return e.team==='SE';})},
-    {key:'SR',label:'Sales Representatives',members:visible.filter(function(e){return e.team==='SR';})},
-    {key:'VLC',label:'Valencia',members:visible.filter(function(e){return e.team==='VLC';})},
-  ];
-  var onboardingMembers=visible.filter(function(e){return e.phase==='Onboarding';});
-  if(onboardingMembers.length)groups.push({key:'OB',label:'Onboarding',members:onboardingMembers});
-  var CK='sfp_sb_col';
-  var col={};try{col=JSON.parse(localStorage.getItem(CK)||'{}');}catch(ex){}
-  function saveCol(){try{localStorage.setItem(CK,JSON.stringify(col));}catch(ex){}}
-  function empItem(emp){
-    var c=COLORS[emp.color%COLORS.length];
-    var r=lastRating(emp.id);var rs=r?RS[r]:null;
-    var al=checkAlerts(emp.id);
+  employees.forEach(function(e){
+    var c=COLORS[e.color%COLORS.length];
+    var r=lastRating(e.id);
+    var rs=r?RS[r]:null;
+    var al=checkAlerts(e.id);
     var d=document.createElement('div');
-    d.className='emp-item'+(view==='emp'&&emp.id===selectedEmp?' active':'');
+    d.className='emp-item'+(view==='emp'&&e.id===selectedEmp?' active':'');
     var badge=rs?('<span class="emp-badge" style="background:'+rs.bg+';color:'+rs.color+'">'+(r==='Teilweise'?'T':r==='Yes'?'Y':r==='Super Yes'?'SY':'MY')+'</span>'):'';
     var alrt=al.length?('<i class="ti ti-alert-triangle" style="font-size:13px;color:var(--amber);flex-shrink:0"></i>'):'';
-    var vlcBadge=emp.team==='VLC'?('<span style="font-size:9px;font-weight:700;color:var(--blue);background:var(--bg2);border-radius:3px;padding:1px 4px;flex-shrink:0;margin-right:2px">VLC</span>'):'';
-    d.innerHTML='<div class="av" style="width:32px;height:32px;font-size:12px;background:'+c.bg+';color:'+c.text+'">'+ini(emp.name)+'</div>'
-      +'<div style="flex:1;min-width:0"><div class="emp-name">'+emp.name+'</div><div class="emp-role">'+emp.role+'</div></div>'
-      +alrt+vlcBadge+badge;
-    d.onclick=(function(eid){return function(){selectedEmp=eid;view='emp';activeTab='performance';renderSidebar();renderMain();};})(emp.id);
-    return d;
-  }
-  function makeGroup(grp){
-    if(!grp.members.length)return;
-    var isCol=!!col[grp.key];
-    var hdr=document.createElement('div');
-    hdr.className='sb-group-header'+(isCol?' collapsed':'');
-    hdr.innerHTML=grp.label
-      +' <span style="background:var(--purple-bg);color:var(--purple);border-radius:20px;padding:0 6px;font-size:9px;font-weight:700">'+grp.members.length+'</span>'
-      +'<span class="sb-group-arrow">▾</span>';
-    var body=document.createElement('div');
-    body.className='sb-group-body';
-    body.style.maxHeight=isCol?'0':(grp.members.length*52+4)+'px';
-    if(!isCol){setTimeout(function(b){return function(){if(b.style.maxHeight!=='0px')b.style.maxHeight='none';};}(body),300);}
-    hdr.onclick=(function(k,h,b){return function(){
-      col[k]=!col[k];saveCol();
-      h.classList.toggle('collapsed',!!col[k]);
-      if(col[k]){b.style.maxHeight=b.scrollHeight+'px';requestAnimationFrame(function(){requestAnimationFrame(function(){b.style.maxHeight='0';});});}
-      else{b.style.maxHeight='0';requestAnimationFrame(function(){b.style.maxHeight=b.scrollHeight+'px';setTimeout(function(){if(!col[k])b.style.maxHeight='none';},260);});}
-    };})(grp.key,hdr,body);
-    grp.members.forEach(function(emp){body.appendChild(empItem(emp));});
-    el.appendChild(hdr);el.appendChild(body);
-  }
-  groups.forEach(makeGroup);
-  var inactive=employees.filter(function(e){return e.active===false&&HIDDEN.indexOf(e.team)<0;});
-  if(inactive.length)makeGroup({key:'INAKTIV',label:'Inaktiv',members:inactive});
+    d.innerHTML='<div class="av" style="width:32px;height:32px;font-size:12px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
+      +'<div style="flex:1;min-width:0"><div class="emp-name">'+e.name+'</div><div class="emp-role">'+e.role+'</div></div>'
+      +alrt+badge;
+    d.onclick=(function(eid){return function(){selectedEmp=eid;view='emp';activeTab='performance';renderSidebar();renderMain();};})(e.id);
+    el.appendChild(d);
+  });
 }
 
 function setTeamRange(d){teamRange=d;renderTeam();}
@@ -830,89 +789,11 @@ function aufmerksamkeitFarbe(tage){
   return 'var(--teal)';
 }
 
-
-function onboardingProgress(id){
-  var steps=onboarding[id];if(!steps||!steps.length)return 0;
-  return steps.filter(function(x){return x;}).length/steps.length;
-}
-
-function toggleTeamGrp(key){
-  var CK='sfp_team_col';
-  var col={};try{col=JSON.parse(localStorage.getItem(CK)||'{}');}catch(ex){}
-  col[key]=!col[key];
-  try{localStorage.setItem(CK,JSON.stringify(col));}catch(ex){}
-  var body=document.getElementById('tgbody-'+key);
-  var arrow=document.getElementById('tgarr-'+key);
-  if(body)body.style.display=col[key]?'none':'grid';
-  if(arrow)arrow.style.transform=col[key]?'rotate(-90deg)':'rotate(0deg)';
-}
-
-function buildGroupedCards(list,days){
-  var TGROUPS=[
-    {key:'SE',label:'Sales Executives',  filter:function(e){return e.team==='SE';}},
-    {key:'SR',label:'Sales Representatives',filter:function(e){return e.team==='SR';}},
-    {key:'VLC',label:'Valencia',         filter:function(e){return e.team==='VLC';}},
-  ];
-  var CK='sfp_team_col';
-  var col={};try{col=JSON.parse(localStorage.getItem(CK)||'{}');}catch(ex){}
-  var html='';
-  TGROUPS.forEach(function(grp){
-    var members=list.filter(grp.filter);
-    if(!members.length)return;
-    var isCol=!!col[grp.key];
-    html+='<div style="margin-bottom:20px">';
-    // Group header - use data-key to avoid quote issues in onclick
-    html+='<div class="team-grp-hdr" data-key="'+grp.key+'" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:10px" onclick="toggleTeamGrp(this.dataset.key)">';
-    html+='<span style="font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.05em;text-transform:uppercase">'+grp.label+'</span>';
-    html+='<span style="background:var(--purple-bg);color:var(--purple);font-size:11px;font-weight:600;padding:1px 8px;border-radius:20px">'+members.length+'</span>';
-    html+='<span id="tgarr-'+grp.key+'" style="margin-left:auto;color:var(--text3);font-size:12px;display:inline-block;transition:transform .2s;transform:'+(isCol?'rotate(-90deg)':'rotate(0deg)')+'">▾</span>';
-    html+='</div>';
-    html+='<div id="tgbody-'+grp.key+'" style="display:'+(isCol?'none':'grid')+'" class="team-grid">';
-    members.forEach(function(emp){
-      var c=COLORS[emp.color%COLORS.length];
-      var r=lastRating(emp.id);var rs=r?RS[r]:null;
-      var ep=getPerf(emp.id,days);
-      function ea(key){return ep.length?Math.round(ep.reduce(function(a,x){return a+x[key];},0)/ep.length):null;}
-      var crOEM=ea('crOEM'),crTW=ea('crTeilweise'),crSY=ea('crSuperYes'),crMY=ea('crMegaYes'),marge=ea('margeGesamt');
-      var empT=empTargets(emp);
-      function kCol(v,t,dir){if(v===null||!t)return'var(--text2)';return(dir==='lte'?v<=t:v>=t)?'var(--teal)':'var(--red)';}
-      var ob=emp.phase==='Onboarding';
-      var obPct=ob?Math.round(onboardingProgress(emp.id)*100):null;
-      html+='<div class="card" style="cursor:pointer" onclick="selectEmp('+emp.id+')">';
-      html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">';
-      html+='<div class="av" style="width:36px;height:36px;font-size:13px;background:'+c.bg+';color:'+c.text+'">'+ini(emp.name)+'</div>';
-      html+='<div style="flex:1"><div style="font-weight:600;font-size:13px">'+emp.name+'</div><div style="font-size:11px;color:var(--text2)">'+emp.role+'</div></div>';
-      html+='<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2)">'+emp.phase+'</span>';
-      html+='</div>';
-      if(ob&&obPct!==null){
-        html+='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:3px"><span>Onboarding</span><span>'+obPct+'%</span></div>';
-        html+='<div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:100%;width:'+obPct+'%;background:var(--amber);border-radius:3px"></div></div></div>';
-      }
-      html+='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">CR OEM</span><span style="font-weight:600;color:'+kCol(crOEM,empT.crOEM.val,empT.crOEM.dir)+'">'+(crOEM!==null?crOEM+'%':'—')+'</span></div>';
-      html+='<div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;position:relative"><div style="height:100%;width:'+Math.min(crOEM||0,100)+'%;background:'+kCol(crOEM,empT.crOEM.val,empT.crOEM.dir)+';border-radius:3px"></div>';
-      html+='<div style="position:absolute;top:0;bottom:0;left:'+empT.crOEM.val+'%;width:2px;background:rgba(0,0,0,0.25)"></div></div></div>';
-      html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px">';
-      [{k:'crTeilweise',l:'TW',t:empT.crTeilweise},{k:'crYes',l:'Yes',t:null},{k:'crSuperYes',l:'SY',t:empT.crSuperYes},{k:'crMegaYes',l:'MY',t:empT.crMegaYes}].forEach(function(m){
-        var v=ea(m.k);var vCol=m.t?kCol(v,m.t.val,m.t.dir):'var(--text2)';
-        html+='<div style="text-align:center;background:var(--bg2);border-radius:var(--r-sm);padding:4px 2px"><div style="font-size:9px;color:var(--text3)">'+m.l+'</div><div style="font-size:12px;font-weight:600;color:'+vCol+'">'+(v!==null?v+'%':'—')+'</div></div>';
-      });
-      html+='</div>';
-      html+='<div style="display:flex;justify-content:space-between;font-size:11px;border-top:1px solid var(--border);padding-top:8px">';
-      html+='<span style="color:var(--text2)">Marge ('+days+'d)</span>';
-      html+='<span style="font-weight:600;color:var(--blue)">'+(marge!==null?'€'+Math.round(marge).toLocaleString('de-DE'):'—')+'</span>';
-      html+='</div></div>';
-    });
-    html+='</div></div>';
-  });
-  return html;
-}
-
 function renderTeam(){
   var ma=document.getElementById('mainArea');
   if(!ma)return;
   var days=teamRange||7;
-  var HIDDEN=['SDM','SC'];
-  var list=activeEmployees().filter(function(e){return HIDDEN.indexOf(e.team)<0;});
+  var list=activeEmployees();
   var allP=list.map(function(e){return getPerf(e.id,days);}).reduce(function(a,b){return a.concat(b);},[]);
   function tAvg(key){if(!allP.length)return null;return allP.reduce(function(a,x){return a+x[key];},0)/allP.length;}
   var totalAlerts=list.reduce(function(a,e){return a+checkAlerts(e.id).length;},0);
@@ -2166,7 +2047,35 @@ document.querySelectorAll('.modal-ov').forEach(function(m){
 });
 lsLoad();
 renderSidebar();
-showView('team');
+var hasData=Object.keys(performance).some(function(k){return performance[k]&&performance[k].length>0;});
+if(!hasData){
+  showView('team');
+  setTimeout(function(){
+    var banner=document.createElement('div');
+    banner.id='fst-banner';
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:8000;display:flex;align-items:center;justify-content:center';
+    var box='<div style="background:var(--bg);border-radius:16px;padding:32px 40px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center">';
+    box+='<div style="width:56px;height:56px;border-radius:50%;background:var(--purple-bg);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px"><i class="ti ti-database-import"></i></div>';
+    box+='<div style="font-size:18px;font-weight:700;margin-bottom:8px">Willkommen im SFP Coaching Dashboard</div>';
+    box+='<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">Noch keine Performance-Daten vorhanden. Lade deine CSV-Datei hoch um loszulegen.</div>';
+    box+='<div style="display:flex;gap:10px;justify-content:center">';
+    box+='<button class="btn btn-primary" id="fst-csv-btn"><i class="ti ti-upload"></i> CSV jetzt hochladen</button>';
+    box+='<button class="btn" id="fst-skip-btn" style="color:var(--text2)">Später</button>';
+    box+='</div>';
+    box+='<div style="font-size:11px;color:var(--text3);margin-top:16px">Einstellungen → Performance-Daten importieren</div>';
+    box+='</div>';
+    banner.innerHTML=box;
+    document.body.appendChild(banner);
+    document.getElementById('fst-csv-btn').onclick=function(){
+      banner.remove();showView('settings');
+    };
+    document.getElementById('fst-skip-btn').onclick=function(){
+      banner.remove();
+    };
+  },600);
+} else {
+  showView('team');
+}
 
 // ── REVIEW ACTIONS ──
 function completeReview(id){
