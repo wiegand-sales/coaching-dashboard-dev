@@ -322,6 +322,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <script>function renderCoachingAnsicht(){
   var ma=document.getElementById('mainArea');if(!ma)return;
   var heute=today(),hD=new Date(heute+'T00:00:00');
@@ -1535,22 +1536,22 @@ function renderTab(){
   // ── COACHING EVAL TAB ──
   if(activeTab==='coaching-eval'){
     var DIMS=[
-      {key:'einwand',   label:'Einwandsb.',   cat:'skill'},
-      {key:'bedarf',    label:'Bedarfsana.',   cat:'skill'},
-      {key:'produkt',   label:'Produktwissen', cat:'skill'},
-      {key:'gespraech', label:'Gesprächsf.',   cat:'skill'},
-      {key:'motivation',label:'Motivation',    cat:'will'},
-      {key:'coach',     label:'Coachability',  cat:'will'},
-      {key:'team',      label:'Teamfähigk.',   cat:'will'},
-      {key:'crOEM',     label:'CR OEM',        cat:'result'},
-      {key:'crTW',      label:'TW',            cat:'result'},
-      {key:'crSY',      label:'SY',            cat:'result'},
-      {key:'crMY',      label:'MY',            cat:'result'},
+      {key:'einwand',   label:'Einwandsb.',   full:'Einwandsbehandlung', cat:'skill'},
+      {key:'bedarf',    label:'Bedarfsana.',   full:'Bedarfsanalyse',     cat:'skill'},
+      {key:'produkt',   label:'Produktw.',     full:'Produktwissen',      cat:'skill'},
+      {key:'gespraech', label:'Gesprächsf.',   full:'Gesprächsführung',   cat:'skill'},
+      {key:'motivation',label:'Motivation',    full:'Motivation',         cat:'will'},
+      {key:'coach',     label:'Coachab.',      full:'Coachability',       cat:'will'},
+      {key:'team',      label:'Teamf.',        full:'Teamfähigkeit',      cat:'will'},
+      {key:'crOEM',     label:'CR OEM',        full:'CR OEM',             cat:'result'},
+      {key:'crTW',      label:'TW',            full:'TW',                 cat:'result'},
+      {key:'crSY',      label:'SY',            full:'SY',                 cat:'result'},
+      {key:'crMY',      label:'MY',            full:'MY',                 cat:'result'},
     ];
     var CCAT={
-      skill: {col:'#534AB7',bg:'rgba(83,74,183,0.15)',  l:'Skill'},
-      will:  {col:'#BA7517',bg:'rgba(186,117,23,0.15)', l:'Will'},
-      result:{col:'#085041',bg:'rgba(8,80,65,0.15)',    l:'Result'}
+      skill: {col:'#534AB7',bg:'rgba(83,74,183,0.13)',  l:'Skill'},
+      will:  {col:'#C47A1E',bg:'rgba(196,122,30,0.13)', l:'Will'},
+      result:{col:'#0A6B55',bg:'rgba(10,107,85,0.13)',  l:'Result'}
     };
     var evals=(reviews[emp.id]||[]).filter(function(r){return r.einwand!==undefined;})
                 .slice().sort(function(a,b){return b.date.localeCompare(a.date);});
@@ -1569,11 +1570,11 @@ function renderTab(){
     }
     html+='</div>';
     html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px">';
-    html+='<canvas id="radarChart" height="280"></canvas>';
+    html+='<div style="position:relative;height:300px"><canvas id="radarChart"></canvas></div>';
     html+='<div style="display:flex;gap:14px;justify-content:center;margin-top:10px;flex-wrap:wrap">';
     ['skill','will','result'].forEach(function(cat){
       html+='<span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:'+CCAT[cat].col+'">';
-      html+='<span style="width:12px;height:12px;border-radius:2px;background:'+CCAT[cat].col+';opacity:0.8;display:inline-block"></span>';
+      html+='<span style="width:12px;height:12px;border-radius:50%;background:'+CCAT[cat].col+';display:inline-block"></span>';
       html+=CCAT[cat].l+'</span>';
     });
     html+='</div></div>';
@@ -1604,138 +1605,141 @@ function renderTab(){
           var v=showEval[d.key]||0;
           var bc=v>=7?'var(--teal)':v>=4?CCAT[cat].col:'var(--amber)';
           html+='<div style="padding:7px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px">';
-          html+='<div style="width:140px;font-size:12px;flex-shrink:0">'+d.label+'</div>';
+          html+='<div style="width:140px;font-size:12px;flex-shrink:0">'+d.full+'</div>';
           html+='<div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden">';
-          html+='<div style="height:100%;width:'+(v*10)+'%;background:'+bc+';border-radius:3px;transition:width .4s"></div></div>';
+          html+='<div style="height:100%;width:'+(v*10)+'%;background:'+bc+';border-radius:3px"></div></div>';
           html+='<div style="width:22px;text-align:right;font-size:13px;font-weight:700;color:'+bc+'">'+v+'</div>';
           html+='</div>';
         });
       });
       if(showEval.note){
-        html+='<div style="padding:10px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);background:var(--bg2)">';
-        html+='<i class="ti ti-notes" style="margin-right:5px"></i>'+showEval.note+'</div>';
+        html+='<div style="padding:10px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);background:var(--bg2)"><i class="ti ti-notes" style="margin-right:5px"></i>'+showEval.note+'</div>';
       }
       html+='</div>';
     } else {
-      html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center;color:var(--text3);margin-bottom:12px">';
-      html+='<i class="ti ti-chart-radar" style="font-size:28px;display:block;margin-bottom:8px"></i>Noch keine Bewertung</div>';
+      html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center;color:var(--text3);margin-bottom:12px"><i class="ti ti-chart-radar" style="font-size:28px;display:block;margin-bottom:8px"></i>Noch keine Bewertung</div>';
     }
     html+='<button class="btn btn-primary" style="width:100%" data-eid="'+emp.id+'" onclick="openCoachingEval(parseInt(this.dataset.eid))"><i class="ti ti-clipboard-plus"></i> Mitarbeiterentwicklung bewerten</button>';
     html+='</div></div>';
 
-    // ── Bewertungs-Historie ──
+    // ── Tabelle ──
     html+='<div class="sec-title" style="margin-bottom:10px">Bewertungs-Historie</div>';
     if(!evals.length){
       html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;text-align:center;color:var(--text3)">Noch keine Bewertungen</div>';
     } else {
-      html+='<div class="tbl" style="overflow-x:auto"><table style="table-layout:fixed;width:100%;min-width:900px"><colgroup>';
-      html+='<col style="width:120px">';
-      DIMS.forEach(function(){html+='<col style="width:60px">';});
-      html+='<col style="min-width:160px">';
-      html+='</colgroup><thead><tr>';
-      html+='<th style="text-align:left;padding:8px 10px">Datum</th>';
+      html+='<div class="tbl" style="overflow-x:auto"><table style="table-layout:fixed;min-width:860px;width:100%"><colgroup><col style="width:130px">';
+      DIMS.forEach(function(){html+='<col style="width:58px">';});
+      html+='<col style="min-width:180px"></colgroup>';
+      html+='<thead><tr><th style="text-align:left">Datum</th>';
       ['skill','will','result'].forEach(function(cat){
         DIMS.filter(function(d){return d.cat===cat;}).forEach(function(d){
-          html+='<th style="text-align:center;background:'+CCAT[cat].bg+';color:'+CCAT[cat].col+';font-size:10px;padding:6px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+d.label+'">'+d.label+'</th>';
+          html+='<th style="text-align:center;background:'+CCAT[cat].bg+';color:'+CCAT[cat].col+';font-size:10px;padding:5px 2px" title="'+d.full+'">'+d.label+'</th>';
         });
       });
-      html+='<th style="text-align:left;padding:8px 10px">Notiz</th></tr></thead><tbody>';
+      html+='<th style="text-align:left">Notiz</th></tr></thead><tbody>';
       evals.forEach(function(ev,i){
-        html+='<tr'+(i===0?' style="background:var(--bg2);font-weight:600"':'')+'>'; 
-        html+='<td style="padding:8px 10px;white-space:nowrap">'+fd(ev.date)+(i===0?' ★':'')+'</td>';
+        html+='<tr'+(i===0?' style="font-weight:600;background:var(--bg2)"':'')+'>'; 
+        html+='<td style="padding:7px 10px;white-space:nowrap">'+fd(ev.date)+(i===0?' ★':'')+'</td>';
         DIMS.forEach(function(d){
           var v=ev[d.key]||0;
           var c=v>=7?'color:var(--teal)':v>=4?'':'color:var(--amber)';
-          html+='<td style="text-align:center;padding:8px 4px;'+c+'">'+v+'</td>';
+          html+='<td style="text-align:center;padding:7px 3px;'+c+'">'+v+'</td>';
         });
-        html+='<td style="padding:8px 10px;font-size:11px;color:var(--text2);white-space:normal;word-break:break-word">'+(ev.note||'—')+'</td>';
-        html+='</tr>';
+        html+='<td style="padding:7px 10px;font-size:11px;color:var(--text2);word-break:break-word">'+(ev.note||'—')+'</td></tr>';
       });
       html+='</tbody></table></div>';
     }
 
-    // ── Chart.js initialisieren ──
+    // ── Chart.js: NUR EIN Dataset, sauber ──
     if(showEval){
       (function(ev,dims,ccat){
         setTimeout(function(){
           var canvas=document.getElementById('radarChart');
           if(!canvas)return;
-          if(canvas._chartInst){canvas._chartInst.destroy();}
-
+          if(canvas._ci){canvas._ci.destroy();}
           var labels=dims.map(function(d){return d.label;});
           var values=dims.map(function(d){return ev[d.key]||0;});
+          var ptBg=dims.map(function(d){return ccat[d.cat].col;});
+          var ptBorder=dims.map(function(d){return ccat[d.cat].col;});
 
-          // Farbe pro Punkt basierend auf Kategorie
-          var ptColors=dims.map(function(d){return ccat[d.cat].col;});
-
-          // Hintergrund-Segmente: für jede Kategorie ein eigenes Dataset mit 0/max
-          // Trick: nur die Punkte der Kategorie bekommen Wert=10, Rest=0
-          // ABER: um die Brüche zu vermeiden, interpolieren wir sanft
-          // Besser: 3 separate Datasets mit jeweils nur den Kategorie-Punkten gefüllt
-          // Wir nutzen NaN für nicht-zugehörige Punkte mit spanGaps:true
-
-          var bgDatasets=[];
-          ['skill','will','result'].forEach(function(cat){
-            var bgVals=dims.map(function(d){
-              return d.cat===cat?10:NaN;
-            });
-            bgDatasets.push({
-              data:bgVals,
-              backgroundColor:ccat[cat].bg,
-              borderColor:ccat[cat].col,
-              borderWidth:0.5,
-              pointRadius:0,
-              fill:true,
-              spanGaps:true,
-              tension:0,
-              order:3
-            });
-          });
-
-          var mainDataset={
-            label:'Bewertung',
-            data:values,
-            backgroundColor:'rgba(30,30,60,0.07)',
-            borderColor:'rgba(30,30,60,0.75)',
-            borderWidth:2.5,
-            pointBackgroundColor:ptColors,
-            pointBorderColor:'#fff',
-            pointBorderWidth:2,
-            pointRadius:5,
-            pointHoverRadius:7,
-            fill:true,
-            order:1
+          // Plugin: zeichnet farbige Segmente als Hintergrund NACH dem Grid
+          var segmentPlugin={
+            id:'catSegments',
+            beforeDatasetsDraw:function(chart){
+              var ctx=chart.ctx;
+              var r=chart.scales.r;
+              var cx=r.xCenter,cy=r.yCenter;
+              var n=dims.length;
+              ctx.save();
+              // Für jede Kategorie: zeichne einen Sektor als Polygon
+              ['skill','will','result'].forEach(function(cat){
+                var idxs=[];
+                dims.forEach(function(d,i){if(d.cat===cat)idxs.push(i);});
+                if(!idxs.length)return;
+                // Polygon von Mitte über alle Kategorie-Achsen bis max
+                ctx.beginPath();
+                ctx.moveTo(cx,cy);
+                // Gehe von erstem bis letzten Index der Kategorie
+                // Füge einen Punkt außerhalb (max=10) für jeden Dim hinzu
+                var first=true;
+                idxs.forEach(function(i){
+                  var angle=(i/n)*2*Math.PI - Math.PI/2;
+                  var pt=r.getPointPosition(i,r.drawingArea);
+                  if(first){ctx.moveTo(cx,cy);ctx.lineTo(pt.x,pt.y);first=false;}
+                  else ctx.lineTo(pt.x,pt.y);
+                });
+                ctx.lineTo(cx,cy);
+                ctx.closePath();
+                ctx.fillStyle=ccat[cat].bg;
+                ctx.fill();
+                ctx.strokeStyle=ccat[cat].col;
+                ctx.lineWidth=1.5;
+                ctx.stroke();
+                ctx.restore();ctx.save();
+              });
+              ctx.restore();
+            }
           };
 
-          canvas._chartInst=new Chart(canvas,{
+          canvas._ci=new Chart(canvas,{
             type:'radar',
-            data:{labels:labels,datasets:bgDatasets.concat([mainDataset])},
+            plugins:[segmentPlugin],
+            data:{
+              labels:labels,
+              datasets:[{
+                label:'Bewertung',
+                data:values,
+                backgroundColor:'rgba(30,30,60,0.06)',
+                borderColor:'rgba(30,30,60,0.8)',
+                borderWidth:2.5,
+                pointBackgroundColor:ptBg,
+                pointBorderColor:'#fff',
+                pointBorderWidth:2,
+                pointRadius:5,
+                pointHoverRadius:7,
+                fill:true
+              }]
+            },
             options:{
               responsive:true,
               maintainAspectRatio:false,
               scales:{r:{
                 min:0,max:10,
-                ticks:{stepSize:2,font:{size:9},color:'rgba(0,0,0,0.35)',backdropColor:'transparent'},
-                grid:{color:'rgba(0,0,0,0.07)',circular:false},
+                ticks:{stepSize:2,font:{size:9},color:'rgba(0,0,0,0.3)',backdropColor:'transparent'},
+                grid:{color:'rgba(0,0,0,0.07)'},
                 angleLines:{color:'rgba(0,0,0,0.08)'},
                 pointLabels:{
-                  font:{size:10.5,weight:'600'},
-                  color:function(ctx){
-                    var d=dims[ctx.index];
-                    return d?ccat[d.cat].col:'#666';
-                  }
+                  font:{size:10,weight:'600'},
+                  color:function(ctx){return ccat[dims[ctx.index].cat].col;}
                 }
               }},
               plugins:{
                 legend:{display:false},
-                tooltip:{
-                  filter:function(item){return item.datasetIndex===bgDatasets.length;},
-                  callbacks:{label:function(ctx){return ' '+ctx.raw+'/10';}}
-                }
+                tooltip:{callbacks:{label:function(ctx){return ' '+ctx.raw+'/10';}}}
               }
             }
           });
-        },120);
+        },150);
       })(showEval,DIMS,CCAT);
     }
   }
