@@ -326,6 +326,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <script>function renderCoachingAnsicht(){
   var ma=document.getElementById('mainArea');if(!ma)return;
   var heute=today(),hD=new Date(heute+'T00:00:00');
@@ -1559,14 +1560,25 @@ function renderTab(){
     };
     var evals=(reviews[emp.id]||[]).filter(function(r){return r.einwand!==undefined;})
                 .slice().sort(function(a,b){return b.date.localeCompare(a.date);});
-    var showEval=evals[0]||null;
+    var _selDate=window._evalDate;
+    var showEval=(_selDate&&evals.find(function(e){return e.date===_selDate;}))||evals[0]||null;
 
-    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;align-items:start">';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">';
 
     // ── Links: Chart ──
     html+='<div style="display:flex;flex-direction:column;gap:12px">';
-    html+='<div class="sec-title">Entwicklungsprofil</div>';
-    html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between">';
+    html+='<div class="sec-title" style="margin:0">Entwicklungsprofil</div>';
+    if(evals.length>1){
+      html+='<select onchange="setEvalDate(this.value)" style="font-size:12px;padding:4px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);cursor:pointer">';
+      evals.forEach(function(ev,i){
+        var sel=(showEval&&ev.date===showEval.date)?' selected':'';
+        html+='<option value="'+ev.date+'"'+sel+'>'+fd(ev.date)+(i===0?' ★':'')+'</option>';
+      });
+      html+='</select>';
+    }
+    html+='</div>';
+    html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;flex:1">';
     html+='<div style="position:relative"><canvas id="radarChart" height="260"></canvas></div>';
     html+='<div style="display:flex;gap:14px;justify-content:center;margin-top:8px;flex-wrap:wrap">';
     ['skill','will','result'].forEach(function(cat){
