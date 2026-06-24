@@ -1793,13 +1793,13 @@ function renderTab(){
     // ── Links: SVG Radar ──
     html+='<div style="display:flex;flex-direction:column;gap:12px">';
     html+='<div class="sec-title">Sessions Übersicht <span style="font-size:12px;font-weight:400;color:var(--text3)">– Anzahl pro Bereich</span></div>';
-    html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px">';
+    html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;flex:1">';
 
     // SVG Radar (Werte = Anzahl Sessions)
     (function(){
       var dims=SDIMS.filter(function(d){return d.cat!=='result'||['CR OEM','TW','SY','MY'].indexOf(d.key)>=0;});
       var n=dims.length,W=320,CX=160,CY=155,R=110;
-      var svg='<svg viewBox="0 0 '+W+' 310" width="100%" style="display:block;margin:0 auto">';
+      var svg='<svg viewBox="0 0 340 310" width="100%" style="display:block;margin:0 auto">';
       // Ringe (0,1,2,3,4,5)
       for(var v=1;v<=5;v++){
         var r2=R*v/maxVal;
@@ -1816,7 +1816,7 @@ function renderTab(){
       dims.forEach(function(d,i){
         var v=tc[d.key]||0;var r2=R*v/maxVal;var a=(i/n)*2*Math.PI-Math.PI/2;
         var px=CX+r2*Math.cos(a),py=CY+r2*Math.sin(a);
-        var lx=CX+(R+22)*Math.cos(a),ly=CY+(R+22)*Math.sin(a);
+        var lx=CX+(R+24)*Math.cos(a),ly=CY+(R+24)*Math.sin(a);
         svg+='<circle cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="4.5" fill="'+SCCAT[d.cat].col+'" stroke="white" stroke-width="2"/>';
         if(v>0)svg+='<text x="'+px.toFixed(1)+'" y="'+(py-7).toFixed(1)+'" text-anchor="middle" font-size="9" font-weight="700" fill="'+SCCAT[d.cat].col+'">'+v+'</text>';
         var anchor=lx<CX-5?'end':lx>CX+5?'start':'middle';
