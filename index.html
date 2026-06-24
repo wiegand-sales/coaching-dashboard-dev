@@ -310,6 +310,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <script>function renderCoachingAnsicht(){
   var ma=document.getElementById('mainArea');if(!ma)return;
   var heute=today(),hD=new Date(heute+'T00:00:00');
@@ -716,7 +717,13 @@ var reviews={
 
 // ── HELPERS ──
 function ini(n){return n.split(' ').map(function(x){return x[0];}).join('').toUpperCase().slice(0,2);}
-function fd(d){if(!d)return '';var p=d.split('-');return p[2]+'.'+p[1]+'.'+p[0];}
+function fd(d){
+  if(!d)return '';
+  var p=d.split('-');
+  var dt=new Date(d+'T00:00:00');
+  var wd=['So','Mo','Di','Mi','Do','Fr','Sa'][dt.getDay()];
+  return wd+', '+p[2]+'.'+p[1]+'.'+p[0];
+}
 function today(){return new Date().toISOString().slice(0,10);}
 function avgSkill(id){var p=protocols[id];if(!p||!p.length||!p[0].skills)return null;var v=Object.values(p[0].skills);return Math.round(v.reduce(function(a,b){return a+b;},0)/v.length);}
 function lastRating(id){var p=protocols[id];return(p&&p.length)?p[0].rating:null;}
@@ -1873,14 +1880,95 @@ function renderTab(){
       if(activeChart){activeChart.destroy();activeChart=null;}
       var data=getPerf(selectedEmp,perfRange);
       var labels=data.map(function(d){return fd(d.date);});
-      var vals=data.map(function(d){return d[perfMetric];});
-      var target=KPI_TARGETS[perfMetric];
-      var colors={optPerH:'#378ADD',crOEM:'#BA7517',crSuperYes:'#534AB7',crMegaYes:'#1D9E75',crTeilweise:'#888780',crYes:'#639922'};
-      var col=colors[perfMetric]||'#534AB7';
-      var mLabels={optPerH:'Opt./Hour',crOEM:'CR OEM %',crSuperYes:'CR Super Yes %',crMegaYes:'CR Mega Yes %',crTeilweise:'CR Teilweise %',crYes:'CR Yes %'};
-      var datasets=[{label:mLabels[perfMetric]||perfMetric,data:vals,borderColor:col,backgroundColor:col+'22',fill:true,tension:0.35,pointRadius:perfRange<=7?4:2,pointBackgroundColor:col}];
-      if(target)datasets.push({label:'Target ('+target+')',data:data.map(function(){return target;}),borderColor:'#E24B4A',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false});
-      activeChart=new Chart(canvas,{type:'line',data:{labels:labels,datasets:datasets},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11},maxTicksLimit:10},grid:{display:false}},y:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+      var mMap={
+        calls:{f:'aktivitaeten',l:'Aktivitäten',c:'#534AB7'},
+        optPerH:{f:'optPerH',l:'Opt./Std.',c:'#378ADD'},
+        crTeilweise:{f:'crTeilweise',l:'CR TW %',c:'#888780'},
+        crYes:{f:'crYes',l:'CR Yes %',c:'#639922'},
+        crSuperYes:{f:'crSuperYes',l:'CR SY %',c:'#534AB7'},
+        crMegaYes:{f:'crMegaYes',l:'CR MY %',c:'#1D9E75'},
+        crOEM:{f:'crOEM',l:'CR OEM %',c:'#BA7517'}
+      };
+      var m=mMap[perfMetric]||{f:perfMetric,l:perfMetric,c:'#534AB7'};
+      var vals=data.map(function(d){return d[m.f]||0;});
+      var empObj=employees.find(function(x){return x.id===selectedEmp;});
+      var empT=empTargets(empObj||{});
+      var tMap={crOEM:'crOEM',crTeilweise:'crTeilweise',crSuperYes:'crSuperYes',crMegaYes:'crMegaYes',optPerH:'optPerH'};
+      var tk=tMap[perfMetric];
+      var target=tk&&empT[tk]?empT[tk].val:null;
+
+      // Team-Durchschnitt: alle Mitarbeiter gleicher Gruppe
+      var myTeam=empObj?empObj.team:null;
+      var teamEmps=myTeam?employees.filter(function(e){return e.team===myTeam&&e.id!==selectedEmp&&e.active!==false;}):[];
+      var teamAvgVals=data.map(function(row){
+        var dayVals=[];
+        teamEmps.forEach(function(te){
+          var tp=(performance[te.id]||[]).find(function(p){return p.date===row.date;});
+          if(tp&&(tp[m.f]||tp[m.f]===0))dayVals.push(tp[m.f]);
+        });
+        return dayVals.length?+(dayVals.reduce(function(a,b){return a+b;},0)/dayVals.length).toFixed(1):null;
+      });
+      var hasTeamAvg=teamAvgVals.some(function(v){return v!==null;});
+
+      var datasets=[{
+        label:m.l,
+        data:vals,
+        borderColor:m.c,
+        backgroundColor:m.c+'22',
+        fill:true,
+        tension:0.35,
+        pointRadius:perfRange<=7?4:2,
+        pointBackgroundColor:m.c,
+        borderWidth:2,
+        order:1
+      }];
+
+      if(hasTeamAvg){
+        datasets.push({
+          label:'Ø '+myTeam+'-Team',
+          data:teamAvgVals,
+          borderColor:'rgba(0,0,0,0.2)',
+          backgroundColor:'transparent',
+          fill:false,
+          tension:0.35,
+          pointRadius:0,
+          borderWidth:1.5,
+          borderDash:[4,3],
+          order:2
+        });
+      }
+
+      if(target!==null){
+        datasets.push({
+          label:'Ziel ('+target+')',
+          data:data.map(function(){return target;}),
+          borderColor:'#E24B4A',
+          borderDash:[4,3],
+          borderWidth:1.5,
+          pointRadius:0,
+          fill:false,
+          order:3
+        });
+      }
+
+      activeChart=new Chart(canvas,{
+        type:'line',
+        data:{labels:labels,datasets:datasets},
+        options:{
+          responsive:true,
+          plugins:{
+            legend:{
+              display:hasTeamAvg||target!==null,
+              position:'top',
+              labels:{font:{size:11},boxWidth:20,padding:12}
+            }
+          },
+          scales:{
+            x:{ticks:{font:{size:11},maxTicksLimit:10},grid:{display:false}},
+            y:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}
+          }
+        }
+      });
     },50);
   }
 }
