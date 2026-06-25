@@ -224,6 +224,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -339,6 +340,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -2180,81 +2182,28 @@ function renderTab(){
 
       +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individuelle KPI-Ziele</div>'
       +'<p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Diese Werte überschreiben die globalen Standards für diesen Mitarbeiter und werden in allen Alerts und der Teamübersicht verwendet.</p>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">CR OEM</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-crOEM" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.crOEMDir==="gte"||!t.crOEMDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.crOEMDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-crOEM" value="'+t.crOEM+'" step="1" min="0" max="100" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">%</span>'
-      +'</div></div>'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">CR TW (Teilweise)</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-crTW" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.crTWDir==="gte"||!t.crTWDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.crTWDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-crTW" value="'+(t.crTW||25)+'" step="1" min="0" max="100" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">%</span>'
-      +'</div></div>'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">CR Super Yes</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-crSY" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.crSYDir==="gte"||!t.crSYDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.crSYDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-crSY" value="'+t.crSuperYes+'" step="1" min="0" max="100" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">%</span>'
-      +'</div></div>'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">CR Mega Yes</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-crMY" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.crMYDir==="gte"||!t.crMYDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.crMYDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-crMY" value="'+t.crMegaYes+'" step="1" min="0" max="100" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">%</span>'
-      +'</div></div>'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Opt. / Stunde</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-opt" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.optPerHDir==="gte"||!t.optPerHDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.optPerHDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-opt" value="'+t.optPerH+'" step="0.1" min="0"  style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'</div></div>'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Opt. / Tag</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-optDay" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.optPerDayDir==="gte"||!t.optPerDayDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.optPerDayDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-optDay" value="'+(t.optPerDay||16)+'" step="1" min="0"  style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'</div></div>'
-      +'</div>'
-
-      html+='<div style="margin-top:12px"><div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;padding-top:8px;border-top:1px solid var(--border)">Weitere Zielwerte</div>';
+      
       html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
-      [{id:'crYes',lbl:'CR Yes %',rk:'crYes',etk:'crYes',u:'%'},{id:'aktiv',lbl:'Aktivitäten/Tag',rk:'aktivitaeten',etk:'aktivitaeten',u:''},{id:'convOEM',lbl:'Conv. OEM/Tag',rk:'convOEM',etk:'convOEM',u:''},{id:'optGes',lbl:'Opt. Gesamt/Tag',rk:'optGesamt',etk:'optGesamt',u:''},{id:'marge',lbl:'Marge Ziel €',rk:'margeGesamt',etk:'margeGesamt',u:'€'}].forEach(function(f){
-        var fv=_tr[f.rk]!=null?_tr[f.rk]:(t[f.etk]&&t[f.etk].val!=null?t[f.etk].val:'');
-        var fd2=_tr[f.id+'Dir']||(t[f.etk]?t[f.etk].dir:'gte');
+      [{lbl:'CR OEM',id:'crOEM',did:'crOEMDir',fv:_tr.crOEM!=null?_tr.crOEM:t.crOEM.val,fd:_tr.crOEMDir||t.crOEM.dir,unit:'%',step:1},
+       {lbl:'CR TW',id:'crTW',did:'crTWDir',fv:_tr.crTW!=null?_tr.crTW:t.crTeilweise.val,fd:_tr.crTWDir||t.crTeilweise.dir,unit:'%',step:1},
+       {lbl:'CR Yes',id:'crYes',did:'crYesDir',fv:_tr.crYes!=null?_tr.crYes:(t.crYes&&t.crYes.val!=null?t.crYes.val:''),fd:_tr.crYesDir||(t.crYes?t.crYes.dir:'gte'),unit:'%',step:1},
+       {lbl:'CR Super Yes',id:'crSY',did:'crSYDir',fv:_tr.crSuperYes!=null?_tr.crSuperYes:t.crSuperYes.val,fd:_tr.crSYDir||t.crSuperYes.dir,unit:'%',step:1},
+       {lbl:'CR Mega Yes',id:'crMY',did:'crMYDir',fv:_tr.crMegaYes!=null?_tr.crMegaYes:t.crMegaYes.val,fd:_tr.crMYDir||t.crMegaYes.dir,unit:'%',step:1},
+       {lbl:'Conv. OEM/Tag',id:'convOEM',did:'convOEMDir',fv:_tr.convOEM!=null?_tr.convOEM:(t.convOEM&&t.convOEM.val!=null?t.convOEM.val:''),fd:_tr.convOEMDir||(t.convOEM?t.convOEM.dir:'gte'),unit:'',step:1},
+       {lbl:'Opt. / Stunde',id:'opt',did:'optPerHDir',fv:_tr.optPerH!=null?_tr.optPerH:t.optPerH.val,fd:_tr.optPerHDir||t.optPerH.dir,unit:'',step:0.1},
+       {lbl:'Opt. / Tag',id:'optDay',did:'optPerDayDir',fv:_tr.optPerDay!=null?_tr.optPerDay:t.optPerDay.val,fd:_tr.optPerDayDir||t.optPerDay.dir,unit:'',step:1},
+       {lbl:'Aktivitäten/Tag',id:'aktiv',did:'aktivDir',fv:_tr.aktivitaeten!=null?_tr.aktivitaeten:(t.aktivitaeten&&t.aktivitaeten.val!=null?t.aktivitaeten.val:''),fd:_tr.aktivDir||(t.aktivitaeten?t.aktivitaeten.dir:'gte'),unit:'',step:1},
+       {lbl:'Marge Ziel €',id:'marge',did:'margeDir',fv:_tr.margeGesamt!=null?_tr.margeGesamt:(t.margeGesamt&&t.margeGesamt.val!=null?t.margeGesamt.val:''),fd:_tr.margeDir||(t.margeGesamt?t.margeGesamt.dir:'gte'),unit:'€',step:10}
+      ].forEach(function(f){
         html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">';
         html+='<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">'+f.lbl+'</div>';
         html+='<div style="display:flex;align-items:center;gap:8px">';
-        html+='<select id="es-d-'+f.id+'" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600"><option value="gte"'+(fd2==='gte'?' selected':'')+'>mind.</option><option value="lte"'+(fd2==='lte'?' selected':'')+'>max.</option></select>';
-        html+='<input type="number" id="es-'+f.id+'" value="'+fv+'" step="1" min="0" placeholder="—" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">';
-        if(f.u)html+='<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">'+f.u+'</span>';
+        html+='<select id="es-d-'+f.id+'" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600"><option value="gte"'+(f.fd==='gte'?' selected':'')+'>mind.</option><option value="lte"'+(f.fd==='lte'?' selected':'')+'>max.</option></select>';
+        html+='<input type="number" id="es-'+f.id+'" value="'+f.fv+'" step="'+f.step+'" min="0" placeholder="—" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">';
+        if(f.unit)html+='<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">'+f.unit+'</span>';
         html+='</div></div>';
       });
-      html+='</div></div>';
+      html+='</div>';
 
       +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpZiele()"><i class="ti ti-check"></i> Ziele speichern</button>'
       +'</div>'
@@ -2898,22 +2847,10 @@ function saveEmpZiele(){
   var emp=employees.find(function(e){return e.id===selectedEmp;});
   if(!emp)return;
   if(!emp.targets)emp.targets={};
-  emp.targets.crOEM=parseFloat(document.getElementById('es-crOEM').value)||55;
-  emp.targets.crOEMDir=document.getElementById('es-d-crOEM').value;
-  emp.targets.crTW=parseFloat(document.getElementById('es-crTW').value)||25;
-  emp.targets.crTWDir=document.getElementById('es-d-crTW').value;
-  emp.targets.crSuperYes=parseFloat(document.getElementById('es-crSY').value)||12;
-  emp.targets.crSYDir=document.getElementById('es-d-crSY').value;
-  emp.targets.crMegaYes=parseFloat(document.getElementById('es-crMY').value)||8;
-  emp.targets.crMYDir=document.getElementById('es-d-crMY').value;
-  emp.targets.optPerH=parseFloat(document.getElementById('es-opt').value)||2.0;
-  emp.targets.optPerHDir=document.getElementById('es-d-opt').value;
-  emp.targets.optPerDay=parseFloat(document.getElementById('es-optDay').value)||16;
-  emp.targets.optPerDayDir=document.getElementById('es-d-optDay').value;
-  [{id:'crYes',rk:'crYes',dk:'crYesDir'},{id:'aktiv',rk:'aktivitaeten',dk:'aktivDir'},{id:'convOEM',rk:'convOEM',dk:'convOEMDir'},{id:'optGes',rk:'optGesamt',dk:'optGesamtDir'},{id:'marge',rk:'margeGesamt',dk:'margeDir'}].forEach(function(f){
+  [{id:'crOEM',rk:'crOEM',dk:'crOEMDir'},{id:'crTW',rk:'crTW',dk:'crTWDir'},{id:'crYes',rk:'crYes',dk:'crYesDir'},{id:'crSY',rk:'crSuperYes',dk:'crSYDir'},{id:'crMY',rk:'crMegaYes',dk:'crMYDir'},{id:'convOEM',rk:'convOEM',dk:'convOEMDir'},{id:'opt',rk:'optPerH',dk:'optPerHDir'},{id:'optDay',rk:'optPerDay',dk:'optPerDayDir'},{id:'aktiv',rk:'aktivitaeten',dk:'aktivDir'},{id:'marge',rk:'margeGesamt',dk:'margeDir'}].forEach(function(f){
     var el=document.getElementById('es-'+f.id);
     var dl=document.getElementById('es-d-'+f.id);
-    if(el&&el.value!=='')emp.targets[f.rk]=parseFloat(el.value)||0;
+    if(el&&el.value!=='')emp.targets[f.rk]=parseFloat(el.value);
     else delete emp.targets[f.rk];
     if(dl)emp.targets[f.dk]=dl.value;
   });
