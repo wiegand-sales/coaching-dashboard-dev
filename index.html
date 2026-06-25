@@ -224,11 +224,6 @@ tr:hover td{background:var(--bg2);}
 
 
 
-
-
-
-
-
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -344,12 +339,6 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
-
-
-
-
-
-
 
 
 
@@ -937,17 +926,17 @@ function empTargets(emp){
   function val(key,fallback){return t[key]!=null?t[key]:((g[key]&&g[key].val!=null)?g[key].val:fallback);}
   function dir(dirKey,valKey,fallback){return t[dirKey]||((g[valKey]&&g[valKey].dir)?g[valKey].dir:fallback);}
   return {
-    crOEM:       {val:val('crOEM',55),          dir:dir('crOEMDir','crOEM','gte')},
-    crTeilweise: {val:val('crTW',25),            dir:dir('crTWDir','crTeilweise','lte')},
-    crYes:       {val:val('crYes',null),          dir:dir('crYesDir','crYes','gte')},
-    crSuperYes:  {val:val('crSuperYes',12),       dir:dir('crSYDir','crSuperYes','gte')},
-    crMegaYes:   {val:val('crMegaYes',8),         dir:dir('crMYDir','crMegaYes','gte')},
+    crOEM:      {val:val('crOEM',55),          dir:dir('crOEMDir','crOEM','gte')},
+    crTeilweise:{val:val('crTW',25),            dir:dir('crTWDir','crTeilweise','lte')},
+    crSuperYes: {val:val('crSuperYes',12),      dir:dir('crSYDir','crSuperYes','gte')},
+    crMegaYes:  {val:val('crMegaYes',8),        dir:dir('crMYDir','crMegaYes','gte')},
     optPerH:     {val:val('optPerH',2.0),         dir:dir('optPerHDir','optPerH','gte')},
-    optPerDay:   {val:val('optPerDay',16),         dir:dir('optPerDayDir','optPerDay','gte')},
-    aktivitaeten:{val:val('aktivitaeten',null),    dir:dir('aktivDir','aktivitaeten','gte')},
-    convOEM:     {val:val('convOEM',null),         dir:dir('convOEMDir','convOEM','gte')},
-    optGesamt:   {val:val('optGesamt',null),       dir:dir('optGesamtDir','optGesamt','gte')},
-    margeGesamt: {val:val('margeGesamt',null),     dir:dir('margeDir','margeGesamt','gte')}
+    optPerDay:   {val:val('optPerDay',16),          dir:dir('optPerDayDir','optPerDay','gte')},
+    crYes:       {val:val('crYes',null),             dir:dir('crYesDir','crYes','gte')},
+    aktivitaeten:{val:val('aktivitaeten',null),       dir:dir('aktivDir','aktivitaeten','gte')},
+    convOEM:     {val:val('convOEM',null),            dir:dir('convOEMDir','convOEM','gte')},
+    optGesamt:   {val:val('optGesamt',null),          dir:dir('optGesamtDir','optGesamt','gte')},
+    margeGesamt: {val:val('margeGesamt',null),        dir:dir('margeDir','margeGesamt','gte')}
   };
 }
 
@@ -2142,6 +2131,15 @@ function renderTab(){
   // ── EMP SETTINGS TAB ──
   if(activeTab==='emp-settings'){
     var t=empTargets(emp);
+    var _tr=emp.targets||{};
+    var tf={
+      crOEM:_tr.crOEM!=null?_tr.crOEM:t.crOEM.val,crOEMDir:_tr.crOEMDir||t.crOEM.dir,
+      crTW:_tr.crTW!=null?_tr.crTW:t.crTeilweise.val,crTWDir:_tr.crTWDir||t.crTeilweise.dir,
+      crSuperYes:_tr.crSuperYes!=null?_tr.crSuperYes:t.crSuperYes.val,crSYDir:_tr.crSYDir||t.crSuperYes.dir,
+      crMegaYes:_tr.crMegaYes!=null?_tr.crMegaYes:t.crMegaYes.val,crMYDir:_tr.crMYDir||t.crMegaYes.dir,
+      optPerH:_tr.optPerH!=null?_tr.optPerH:t.optPerH.val,optPerHDir:_tr.optPerHDir||t.optPerH.dir,
+      optPerDay:_tr.optPerDay!=null?_tr.optPerDay:t.optPerDay.val,optPerDayDir:_tr.optPerDayDir||t.optPerDay.dir
+    };
     var swatches=COLORS.map(function(col,i){
       return '<div onclick="setEmpColor('+i+')" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:'+col.bg+';border:3px solid '+(emp.color===i?col.text:'transparent')+';display:inline-block;margin-right:6px;margin-bottom:6px;transition:all .15s"></div>';
     }).join('');
@@ -2177,60 +2175,6 @@ function renderTab(){
       +'<div><label>Vertragsende</label><input type="date" id="es-end" value="'+(emp.endDate||'')+'"></div>'
       +'</div>'
       +'<div style="margin-bottom:16px"><label>Avatar-Farbe</label><div style="margin-top:8px">'+swatches+'</div></div>'
-      
-      // Extra Zielwerte
-      html+='<div style="margin-top:12px">';
-      html+='<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;padding-top:8px;border-top:1px solid var(--border)">Weitere Zielwerte (Performance Trend)</div>';
-      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
-      [
-        {id:'crYes',  dir:'crYesDir',    lbl:'CR Yes %',        key:'crYes',        unit:'%', step:1,  max:100},
-        {id:'aktiv',  dir:'aktivDir',    lbl:'Aktivitäten/Tag', key:'aktivitaeten', unit:'',  step:1,  max:999},
-        {id:'convOEM',dir:'convOEMDir',  lbl:'Conv. OEM/Tag',   key:'convOEM',      unit:'',  step:1,  max:999},
-        {id:'optGes', dir:'optGesamtDir',lbl:'Opt. Gesamt/Tag', key:'optGesamt',    unit:'',  step:1,  max:999},
-        {id:'marge',  dir:'margeDir',    lbl:'Marge Ziel €',    key:'margeGesamt',  unit:'€', step:10, max:99999},
-      ].forEach(function(f){
-        var fv=_raw[f.key]!=null?_raw[f.key]:(_et[f.key]&&_et[f.key].val!=null?_et[f.key].val:'');
-        var fd2=_raw[f.dir]||(_et[f.key]?_et[f.key].dir:'gte');
-        html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">';
-        html+='<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">'+f.lbl+'</div>';
-        html+='<div style="display:flex;align-items:center;gap:8px">';
-        html+='<select id="es-d-'+f.id+'" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">';
-        html+='<option value="gte"'+(fd2==='gte'?' selected':'')+'>mind.</option>';
-        html+='<option value="lte"'+(fd2==='lte'?' selected':'')+'>max.</option>';
-        html+='</select>';
-        html+='<input type="number" id="es-'+f.id+'" value="'+fv+'" step="'+f.step+'" min="0" max="'+f.max+'" placeholder="—" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">';
-        if(f.unit)html+='<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">'+f.unit+'</span>';
-        html+='</div></div>';
-      });
-      // ── Weitere Zielwerte ──
-      html+='<div style="margin-top:12px">';
-      html+='<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;padding-top:8px;border-top:1px solid var(--border)">Weitere Zielwerte (Performance Trend)</div>';
-      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
-      var extraKPIs=[
-        {id:'crYes',  dId:'crYesDir',    lbl:'CR Yes %',        rk:'crYes',       etk:'crYes',       unit:'%',  step:1,  max:100},
-        {id:'aktiv',  dId:'aktivDir',    lbl:'Aktivitäten/Tag', rk:'aktivitaeten',etk:'aktivitaeten',unit:'',   step:1,  max:9999},
-        {id:'convOEM',dId:'convOEMDir',  lbl:'Conv. OEM/Tag',   rk:'convOEM',     etk:'convOEM',     unit:'',   step:1,  max:9999},
-        {id:'optGes', dId:'optGesamtDir',lbl:'Opt. Gesamt/Tag', rk:'optGesamt',   etk:'optGesamt',   unit:'',   step:1,  max:9999},
-        {id:'marge',  dId:'margeDir',    lbl:'Marge Ziel €',    rk:'margeGesamt', etk:'margeGesamt', unit:'€',  step:10, max:999999},
-      ];
-      extraKPIs.forEach(function(f){
-        var _tr=emp.targets||{};
-        var fv=_tr[f.rk]!=null?_tr[f.rk]:(t[f.etk]&&t[f.etk].val!=null?t[f.etk].val:'');
-        var fdir=_tr[f.dId]||(t[f.etk]?t[f.etk].dir:'gte');
-        html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">';
-        html+='<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">'+f.lbl+'</div>';
-        html+='<div style="display:flex;align-items:center;gap:8px">';
-        html+='<select id="es-d-'+f.id+'" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">';
-        html+='<option value="gte"'+(fdir==='gte'?' selected':'')+'>mind.</option>';
-        html+='<option value="lte"'+(fdir==='lte'?' selected':'')+'>max.</option>';
-        html+='</select>';
-        html+='<input type="number" id="es-'+f.id+'" value="'+fv+'" step="'+f.step+'" min="0" placeholder="—" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">';
-        if(f.unit)html+='<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">'+f.unit+'</span>';
-        html+='</div></div>';
-      });
-      html+='</div></div>';
-
-      html+='</div></div>';
       +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Änderungen speichern</button>'
       +'</div>'
 
@@ -2296,6 +2240,22 @@ function renderTab(){
       +'<input type="number" id="es-optDay" value="'+(t.optPerDay||16)+'" step="1" min="0"  style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
       +'</div></div>'
       +'</div>'
+
+      html+='<div style="margin-top:12px"><div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;padding-top:8px;border-top:1px solid var(--border)">Weitere Zielwerte</div>';
+      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+      [{id:'crYes',lbl:'CR Yes %',rk:'crYes',etk:'crYes',u:'%'},{id:'aktiv',lbl:'Aktivitäten/Tag',rk:'aktivitaeten',etk:'aktivitaeten',u:''},{id:'convOEM',lbl:'Conv. OEM/Tag',rk:'convOEM',etk:'convOEM',u:''},{id:'optGes',lbl:'Opt. Gesamt/Tag',rk:'optGesamt',etk:'optGesamt',u:''},{id:'marge',lbl:'Marge Ziel €',rk:'margeGesamt',etk:'margeGesamt',u:'€'}].forEach(function(f){
+        var fv=_tr[f.rk]!=null?_tr[f.rk]:(t[f.etk]&&t[f.etk].val!=null?t[f.etk].val:'');
+        var fd2=_tr[f.id+'Dir']||(t[f.etk]?t[f.etk].dir:'gte');
+        html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">';
+        html+='<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">'+f.lbl+'</div>';
+        html+='<div style="display:flex;align-items:center;gap:8px">';
+        html+='<select id="es-d-'+f.id+'" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600"><option value="gte"'+(fd2==='gte'?' selected':'')+'>mind.</option><option value="lte"'+(fd2==='lte'?' selected':'')+'>max.</option></select>';
+        html+='<input type="number" id="es-'+f.id+'" value="'+fv+'" step="1" min="0" placeholder="—" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">';
+        if(f.u)html+='<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">'+f.u+'</span>';
+        html+='</div></div>';
+      });
+      html+='</div></div>';
+
       +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpZiele()"><i class="ti ti-check"></i> Ziele speichern</button>'
       +'</div>'
 
@@ -2938,7 +2898,6 @@ function saveEmpZiele(){
   var emp=employees.find(function(e){return e.id===selectedEmp;});
   if(!emp)return;
   if(!emp.targets)emp.targets={};
-  // Kern-KPIs
   emp.targets.crOEM=parseFloat(document.getElementById('es-crOEM').value)||55;
   emp.targets.crOEMDir=document.getElementById('es-d-crOEM').value;
   emp.targets.crTW=parseFloat(document.getElementById('es-crTW').value)||25;
@@ -2951,14 +2910,7 @@ function saveEmpZiele(){
   emp.targets.optPerHDir=document.getElementById('es-d-opt').value;
   emp.targets.optPerDay=parseFloat(document.getElementById('es-optDay').value)||16;
   emp.targets.optPerDayDir=document.getElementById('es-d-optDay').value;
-  // Weitere Zielwerte
-  [
-    {id:'crYes',  rk:'crYes',       dk:'crYesDir'},
-    {id:'aktiv',  rk:'aktivitaeten',dk:'aktivDir'},
-    {id:'convOEM',rk:'convOEM',     dk:'convOEMDir'},
-    {id:'optGes', rk:'optGesamt',   dk:'optGesamtDir'},
-    {id:'marge',  rk:'margeGesamt', dk:'margeDir'}
-  ].forEach(function(f){
+  [{id:'crYes',rk:'crYes',dk:'crYesDir'},{id:'aktiv',rk:'aktivitaeten',dk:'aktivDir'},{id:'convOEM',rk:'convOEM',dk:'convOEMDir'},{id:'optGes',rk:'optGesamt',dk:'optGesamtDir'},{id:'marge',rk:'margeGesamt',dk:'margeDir'}].forEach(function(f){
     var el=document.getElementById('es-'+f.id);
     var dl=document.getElementById('es-d-'+f.id);
     if(el&&el.value!=='')emp.targets[f.rk]=parseFloat(el.value)||0;
