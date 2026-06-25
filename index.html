@@ -232,6 +232,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -347,6 +348,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -670,7 +672,12 @@ function lsLoad(){
     var raw=localStorage.getItem(LS_KEY);
     if(!raw)return false;
     var d=JSON.parse(raw);
-    if(d.employees&&d.employees.length)employees=d.employees;
+    if(d.employees&&d.employees.length){
+      employees=d.employees;
+      // Migrate old role names to short codes
+      var _roleMap={'Sales Executive':'SE','Senior Vertriebsmitarbeiter':'SE','Vertriebsmitarbeiter':'SR','Sales Representative':'SR','Valencia':'VLC'};
+      employees.forEach(function(e){if(_roleMap[e.role])e.role=_roleMap[e.role];});
+    }
     if(d.protocols)protocols=d.protocols;
     if(d.solidroadData)solidroadData=d.solidroadData;
     if(d.onboarding)onboarding=d.onboarding;
@@ -972,7 +979,7 @@ function renderSidebar(){
   var order=['SE','SR','VLC','SDM','SC'];
   var positions=[];
   aktivEmps.forEach(function(e){
-    var r=e.role||e.team||'Sonstige';
+    var r=e.role||'Sonstige';
     if(positions.indexOf(r)<0)positions.push(r);
   });
   positions.sort(function(a,b){
@@ -981,10 +988,8 @@ function renderSidebar(){
   });
   var groups=[];
   positions.forEach(function(pos){
-    var members=aktivEmps.filter(function(e){return (e.role||e.team||'Sonstige')===pos;});
-    var labelMap={'Sales Executive':'SE','Sales Representative':'SR','Valencia':'VLC','Vertriebsmitarbeiter':'SR','Senior Vertriebsmitarbeiter':'SE'};
-    var lbl=labelMap[pos]||pos;
-    if(members.length)groups.push({key:pos,label:lbl,members:members});
+    var members=aktivEmps.filter(function(e){return (e.role||'Sonstige')===pos;});
+    if(members.length)groups.push({key:pos,label:pos,members:members});
   });
   if(onboardingEmps.length)groups.push({key:'OB',label:'Onboarding',members:onboardingEmps});
   var CK='sfp_sb_col';
