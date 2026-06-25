@@ -209,6 +209,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -311,6 +312,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -1809,7 +1811,7 @@ function renderTab(){
     // Links: Chart
     html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px">';
     html+='<div class="sec-title" style="margin-bottom:10px">Sessions Übersicht <span style="font-size:12px;font-weight:400;color:var(--text3)">– Anzahl pro Bereich</span></div>';
-    html+='<div style="position:relative;height:320px"><canvas id="sessRadar"></canvas></div>';
+    html+='<div style="position:relative;height:420px"><canvas id="sessRadar"></canvas></div>';
     html+='<div style="display:flex;gap:14px;justify-content:center;margin-top:8px;flex-wrap:wrap">';
     ['skill','will','result'].forEach(function(cat){
       html+='<span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:'+SCCAT[cat].col+'"><span style="width:10px;height:10px;border-radius:50%;background:'+SCCAT[cat].col+';display:inline-block"></span>'+SCCAT[cat].l+'</span>';
@@ -1942,7 +1944,7 @@ function renderTab(){
               grid:{color:'rgba(0,0,0,0.06)'},
               angleLines:{color:'rgba(0,0,0,0.07)'},
               pointLabels:{
-                font:{size:12,weight:'600'},
+                font:{size:13,weight:'600'},
                 color:function(ctx){return ccat[dims[ctx.index].cat].col;}
               }
             }},
