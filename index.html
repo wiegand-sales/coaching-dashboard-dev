@@ -211,6 +211,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -313,6 +314,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -882,7 +884,18 @@ function activeEmployees(){
   return employees.filter(function(e){return e.active!==false;});
 }
 
-function empTargets(emp){return (emp&&emp.targets)?emp.targets:GLOBAL_TARGETS;}
+function empTargets(emp){
+  var g=GLOBAL_TARGETS||KPI_TARGETS;
+  var t=(emp&&emp.targets)||{};
+  return {
+    crOEM:      t.crOEM      != null ? t.crOEM      : (g.crOEM?g.crOEM.val:55),
+    crTW:       t.crTW       != null ? t.crTW       : (g.crTeilweise?g.crTeilweise.val:25),
+    crSuperYes: t.crSuperYes != null ? t.crSuperYes : (g.crSuperYes?g.crSuperYes.val:12),
+    crMegaYes:  t.crMegaYes  != null ? t.crMegaYes  : (g.crMegaYes?g.crMegaYes.val:8),
+    optPerH:    t.optPerH    != null ? t.optPerH    : (g.optPerH?g.optPerH.val:2.0),
+    optPerDay:  t.optPerDay  != null ? t.optPerDay  : 16
+  };
+}
 
 function renderSidebar(){
   var el=document.getElementById('empList');
@@ -2750,9 +2763,11 @@ function saveEmpZiele(){
   if(!emp)return;
   if(!emp.targets)emp.targets={};
   emp.targets.crOEM=parseFloat(document.getElementById('es-crOEM').value)||55;
+  emp.targets.crTW=parseFloat(document.getElementById('es-crTW').value)||25;
   emp.targets.crSuperYes=parseFloat(document.getElementById('es-crSY').value)||12;
   emp.targets.crMegaYes=parseFloat(document.getElementById('es-crMY').value)||8;
   emp.targets.optPerH=parseFloat(document.getElementById('es-opt').value)||2.0;
+  emp.targets.optPerDay=parseFloat(document.getElementById('es-optDay').value)||16;
   alert('Ziele gespeichert für '+emp.name+'.');
   renderTab();
 }
