@@ -215,6 +215,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -235,14 +236,27 @@ tr:hover td{background:var(--bg2);}
 <!-- MODALS -->
 <div class="modal-ov hidden" id="addEmpModal"><div class="modal">
   <div class="modal-title">Mitarbeiter hinzufügen</div>
-  <div class="f2"><div><label>Vollständiger Name</label><input type="text" id="newName" placeholder="z.B. Anna Bauer"></div>
-  <div><label>Position</label><select id="newRole"><option>Vertriebsmitarbeiter</option><option>Senior Vertriebsmitarbeiter</option><option>Sales Coach</option></select></div></div>
-  <div class="f3"><div><label>Phase</label><select id="newPhase"><option>Onboarding</option><option>Aktiv</option><option>Entwicklung</option></select></div>
-  <div><label>Team</label><input type="text" id="newTeam" placeholder="z.B. Deutschland"></div>
-  <div><label>Startdatum</label><input type="date" id="newStart"></div></div>
-  <div class="f2"><div><label>Anstellung</label><select id="newContract"><option value="Vollzeit">Vollzeit</option><option value="Teilzeit">Teilzeit</option></select></div>
-  <div><label>Stunden / Woche</label><input type="number" id="newHours" value="40" min="1" max="60"></div></div>
-  <div class="modal-actions"><button class="btn" onclick="closeModal('addEmpModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveNewEmp()"><i class="ti ti-check"></i> Add</button></div>
+  <div class="f2" style="margin-bottom:12px">
+    <div><label>Vollständiger Name</label><input type="text" id="newName" placeholder="z.B. Anna Bauer"></div>
+    <div><label>Position</label><select id="newRole" onchange="if(this.value==='__new__'){var nv=prompt('Neue Position:');if(nv&&nv.trim()){var o=document.createElement('option');o.value=nv.trim();o.text=nv.trim();this.add(o);this.value=nv.trim();}else{this.value='SR';}}">
+      <option value="SR">SR</option>
+      <option value="SE">SE</option>
+      <option value="VLC">VLC</option>
+      <option value="SDM">SDM</option>
+      <option value="SC">SC</option>
+      <option value="__new__">+ Neue Position hinzufügen</option>
+    </select></div>
+  </div>
+  <div class="f3" style="margin-bottom:12px">
+    <div><label>Phase</label><select id="newPhase"><option>Onboarding</option><option>Aktiv</option></select></div>
+    <div><label>Anstellung</label><select id="newContract"><option value="Vollzeit">Vollzeit</option><option value="Teilzeit">Teilzeit</option></select></div>
+    <div><label>Stunden / Woche</label><input type="number" id="newHours" value="40" min="1" max="60"></div>
+  </div>
+  <div class="f2" style="margin-bottom:12px">
+    <div><label>Vertragsbeginn</label><input type="date" id="newStart"></div>
+    <div><label>Vertragsende</label><input type="date" id="newEnd"></div>
+  </div>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('addEmpModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveNewEmp()"><i class="ti ti-check"></i> Hinzufügen</button></div>
 </div></div>
 
 <div class="modal-ov hidden" id="addTaskModal"><div class="modal">
