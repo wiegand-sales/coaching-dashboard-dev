@@ -207,6 +207,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -309,6 +310,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -1417,7 +1419,7 @@ function renderEmpDetail(){
     +'<div class="tab" data-tab="performance" onclick="switchTab(\'performance\')">Performance</div>'
     +'<div class="tab" data-tab="coaching-eval" onclick="switchTab(\'coaching-eval\')">Coaching</div>'
     +'<div class="tab" data-tab="session" onclick="switchTab(\'session\')">Session</div>'
-    +'<div class="tab" data-tab="tasks" onclick="switchTab(\'tasks\')" id="tasksTabBtn">Tasks'+(tc>0?' <span style="background:var(--purple);color:#fff;border-radius:20px;font-size:10px;font-weight:600;padding:1px 6px">'+tc+'</span>':'')+'</div>'
+    +'<div class="tab" data-tab="tasks" onclick="switchTab(\'tasks\')">Tasks'+(tc>0?' <span style="background:var(--purple);color:#fff;border-radius:20px;font-size:10px;font-weight:600;padding:1px 6px">'+tc+'</span>':'')+'</div>'
     +'<div class="tab" data-tab="solidroad" onclick="switchTab(\'solidroad\')">SolidRoad</div>'
     +'<div class="tab" data-tab="emp-settings" onclick="switchTab(\'emp-settings\')">Einstellungen</div>'
     +'<div class="content" id="tabContent"></div>';
