@@ -216,6 +216,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -331,6 +332,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -2609,30 +2611,29 @@ function toggleSessCard(eid){
 
 function saveSession(empId){
   var date=document.getElementById('sess-date').value;
+  if(!date){alert('Bitte Datum eingeben.');return;}
   var type=document.getElementById('sess-type').value;
-  var rating=document.getElementById('sess-rating').value;
   var start=document.getElementById('sess-start').value.trim();
   var stop=document.getElementById('sess-stop').value.trim();
   var cont=document.getElementById('sess-cont').value.trim();
   var notes=document.getElementById('sess-note').value.trim();
-  if(!date){alert('Bitte Datum eingeben.');return;}
   var topics=[];
-  var sel=document.getElementById('sess-topic-sel');if(sel&&sel.value)topics.push(sel.value);
+  var sel=document.getElementById('sess-topic-sel');
+  if(sel&&sel.value)topics.push(sel.value);
   var entry={
-    id:Date.now(),date:date,type:type,rating:rating||null,
+    id:Date.now(),date:date,type:type,rating:null,
     topics:topics,start:start,stop:stop,cont:cont,notes:notes,
     text:notes,focus:topics.join(', ')
   };
   if(!protocols[empId])protocols[empId]=[];
   protocols[empId].push(entry);
   lsSave();
-  // Reset form
-  document.getElementById('sess-start').value='';
-  document.getElementById('sess-stop').value='';
-  document.getElementById('sess-cont').value='';
-  document.getElementById('sess-note').value='';
-  document.getElementById('sess-rating').value='';
-  document.querySelectorAll('#sess-topics input:checked').forEach(function(cb){cb.checked=false;});
+  // Reset form safely
+  ['sess-start','sess-stop','sess-cont','sess-note'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  var tsel=document.getElementById('sess-topic-sel');
+  if(tsel)tsel.value='';
   renderTab();
 }
 
