@@ -239,6 +239,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -354,6 +355,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -1236,22 +1238,21 @@ function renderTeam(){
       +'<div class="av" style="width:30px;height:30px;font-size:11px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
       +'<div><div style="font-weight:500">'+e.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:12px;color:var(--amber);margin-left:4px"></i>':'')+'</div>'
       +'<div style="font-size:11px;color:var(--text2)">'+e.phase+'</div></div></div></td>'
-      // CR Spalten – feste Breite, kleine 7d-Zahl oben rechts
-      +crCell(ea('crOEM'),KPI_TARGETS.crOEM.val,KPI_TARGETS.crOEM.dir)
-      +crCell(ea('crTeilweise'),KPI_TARGETS.crTeilweise.val,KPI_TARGETS.crTeilweise.dir)
-      +crCell(ea('crYes'),null,'gte')
-      +crCell(ea('crSuperYes'),KPI_TARGETS.crSuperYes.val,KPI_TARGETS.crSuperYes.dir)
-      +crCell(ea('crMegaYes'),KPI_TARGETS.crMegaYes.val,KPI_TARGETS.crMegaYes.dir)
+      // CR Spalten
+      +crCell(ea('crOEM'),empTargets(e).crOEM.val,empTargets(e).crOEM.dir)
+      +crCell(ea('crTeilweise'),empTargets(e).crTeilweise.val,empTargets(e).crTeilweise.dir)
+      +crCell(ea('crYes'),empTargets(e).crYes?empTargets(e).crYes.val:null,'gte')
+      +crCell(ea('crSuperYes'),empTargets(e).crSuperYes.val,empTargets(e).crSuperYes.dir)
+      +crCell(ea('crMegaYes'),empTargets(e).crMegaYes.val,empTargets(e).crMegaYes.dir)
       // Marge
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
       +'<div style="font-size:13px;font-weight:600;color:var(--blue)">€'+em.toLocaleString('de-DE')+'</div>'
       +'<div style="font-size:11px;color:var(--text3)">'+days+'d</div></td>'
       // Opt/h
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(ea('optPerH')!==null?ea('optPerH').toFixed(1):'—')+'</td>'
-      // KPI Alerts
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
-      // Letzte Bewertung
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'// Sessions
+      // Alerts
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--amber);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
+      // Sessions
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:var(--purple)">'+sCount+'</td>'
       // Letzte Session
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:'+aFarbe+'">'+(tage===null?'Keine':tage===0?'Heute':tage+'d')+'</td>'
@@ -1259,11 +1260,8 @@ function renderTeam(){
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+lsType+'</td>'
       // Inhalt des Coachings
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+lsTopics+'</td>'
-      // Alerts
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--amber);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
-      // Planen
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
-      +'<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openSessionModal('+e.id+')"><i class="ti ti-calendar-plus"></i> Planen</button></td>'
+      // Aktion
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openSessionModal('+e.id+')"><i class="ti ti-calendar-plus"></i> Planen</button></td>'
       +'</tr>';
   });
 
