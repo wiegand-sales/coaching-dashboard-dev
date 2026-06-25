@@ -240,6 +240,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -355,6 +356,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -1229,7 +1231,10 @@ function renderTeam(){
     var sCount=(protocols[e.id]||[]).length;
     var tage=tageSeitLetzterSession(e.id);
     var aFarbe=aufmerksamkeitFarbe(tage);
-    var entw=entwicklungsfelder(e.id);
+    var _ss=(protocols[e.id]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+    var _ls=_ss[0]||null;
+    var lsType=_ls?(_ls.type||'—'):'—';
+    var lsTopics=_ls&&_ls.topics&&_ls.topics.length?_ls.topics.slice(0,2).join(', '):'—';
 
     rows+='<tr style="cursor:pointer" onclick="selectEmp('+e.id+')">'
       // Mitarbeiter
