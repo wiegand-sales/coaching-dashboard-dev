@@ -206,6 +206,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -308,6 +309,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -1805,7 +1807,7 @@ function renderTab(){
     html+='<div class="sec-title">Sessions Übersicht <span style="font-size:12px;font-weight:400;color:var(--text3)">– Anzahl pro Bereich</span></div>';
     html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;flex:1">';
     // Canvas mit exakt gleicher Höhe wie Coaching Tab
-    html+='<div style="position:relative;height:360px"><canvas id="sessRadar"></canvas></div>';
+    html+='<div style="position:relative;height:360px;min-height:360px"><canvas id="sessRadar"></canvas></div>';
     // Legende
     html+='<div style="display:flex;gap:14px;justify-content:center;margin-top:8px;flex-wrap:wrap">';
     ['skill','will','result'].forEach(function(cat){
@@ -1828,7 +1830,7 @@ function renderTab(){
     // ── Rechts: Detailansicht (identischer Aufbau wie Coaching Tab rechts) ──
     html+='<div style="display:flex;flex-direction:column;gap:12px">';
     html+='<div class="sec-title">Detailansicht</div>';
-    html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">';
+    html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;flex:1">';
     ['skill','will','result'].forEach(function(cat){
       var cdims=SDIMS.filter(function(d){return d.cat===cat;});
       html+='<div style="padding:6px 14px;background:'+SCCAT[cat].bg+';border-top:2px solid '+SCCAT[cat].col+'">';
