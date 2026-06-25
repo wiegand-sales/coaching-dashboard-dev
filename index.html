@@ -236,6 +236,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -351,6 +352,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -1374,8 +1376,11 @@ function renderTeam(){
     var sCount=(protocols[e.id]||[]).length;
     var tage=tageSeitLetzterSession(e.id);
     var aFarbe=aufmerksamkeitFarbe(tage);
-    var entw=entwicklungsfelder(e.id);
     var al=checkAlerts(e.id);
+    var _ss=(protocols[e.id]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+    var _ls=_ss[0]||null;
+    var lsType=_ls?(_ls.type||'—'):'—';
+    var lsTopics=_ls&&_ls.topics&&_ls.topics.length?_ls.topics.slice(0,2).join(', '):'—';
     coachRows+='<tr style="cursor:pointer" onclick="selectEmp('+e.id+')">'
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
       +'<div style="display:flex;align-items:center;gap:9px">'
@@ -1384,23 +1389,11 @@ function renderTeam(){
       +'<div style="font-size:11px;color:var(--text2)">'+e.phase+(e.team?' · '+e.team:'')+'</div></div></div></td>'
       +(function(){
         var naechste=naechsteGeplanteSession(e.id);
-        var skill=avgSkill(e.id);
-        var skillCol=skill!==null?(skill>=80?'var(--teal)':skill>=60?'var(--purple)':'var(--amber)'):'var(--text3)';
         return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:var(--purple)">'+sCount+'</td>'
           +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:'+aFarbe+'">'+(tage===null?'Keine':tage===0?'Heute':tage+'d')+'</td>'
-          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
-          +(naechste
-            ?'<span style="font-size:12px;font-weight:600;color:var(--purple)"><i class="ti ti-calendar-event" style="font-size:12px;margin-right:4px"></i>'+fd(naechste)+'</span>'
-            :'<span style="font-size:12px;color:var(--text3)">—</span>')
-          +'</td>'
-          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(rs?'<span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+r+'</span>':'—')+'</td>'
-          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
-          +(skill!==null
-            ?'<div style="display:flex;align-items:center;gap:6px"><div style="width:50px;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+skill+'%;background:'+skillCol+'"></div></div><span style="font-size:12px;font-weight:600;color:'+skillCol+'">'+skill+'%</span></div>'
-            :'<span style="font-size:12px;color:var(--text3)">—</span>')
-          +'</td>'
-          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+(entw.length?entw.join(', '):'—')+'</td>'
-          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+lsType+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+lsTopics+'</td>'
+          +(al.length?'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><span style="color:var(--amber);font-weight:600;font-size:12px">⚠ '+al.length+'</span></td>':'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><span style="color:var(--teal)">✓</span></td>')
           +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openSessionModal('+e.id+')"><i class="ti ti-calendar-plus"></i> Planen</button></td>';
       })()
       +'</tr>';
@@ -1480,10 +1473,10 @@ function renderTeam(){
     +'<th>Marge</th>'
     +'<th>Opt./h</th>'
     +'<th>Alerts</th>'
-    +'<th>Letzte Bew.</th>'
     +'<th>Sessions</th>'
     +'<th>Letzte Session</th>'
-    +'<th>Entwicklungsfelder</th>'
+    +'<th>Art des Coachings</th>'
+    +'<th>Inhalt des Coachings</th>'
     +'<th>Aktion</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
     // Staff Cards
