@@ -2125,8 +2125,23 @@ function renderTab(){
   
   // ── EMP SETTINGS TAB ──
   if(activeTab==='emp-settings'){
-    var t=empTargets(emp);
-    var tr=emp.targets||{}; // raw individual targets
+    var _et=empTargets(emp);
+    var _raw=emp.targets||{};
+    // t gives form-ready values: flat numbers + dir strings, individual first
+    var t={
+      crOEM:     _raw.crOEM!=null?_raw.crOEM:_et.crOEM.val,
+      crOEMDir:  _raw.crOEMDir||_et.crOEM.dir,
+      crTW:      _raw.crTW!=null?_raw.crTW:_et.crTeilweise.val,
+      crTWDir:   _raw.crTWDir||_et.crTeilweise.dir,
+      crSuperYes:_raw.crSuperYes!=null?_raw.crSuperYes:_et.crSuperYes.val,
+      crSYDir:   _raw.crSYDir||_et.crSuperYes.dir,
+      crMegaYes: _raw.crMegaYes!=null?_raw.crMegaYes:_et.crMegaYes.val,
+      crMYDir:   _raw.crMYDir||_et.crMegaYes.dir,
+      optPerH:   _raw.optPerH!=null?_raw.optPerH:_et.optPerH.val,
+      optPerHDir:_raw.optPerHDir||_et.optPerH.dir,
+      optPerDay: _raw.optPerDay!=null?_raw.optPerDay:_et.optPerDay.val,
+      optPerDayDir:_raw.optPerDayDir||_et.optPerDay.dir
+    };
     var swatches=COLORS.map(function(col,i){
       return '<div onclick="setEmpColor('+i+')" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:'+col.bg+';border:3px solid '+(emp.color===i?col.text:'transparent')+';display:inline-block;margin-right:6px;margin-bottom:6px;transition:all .15s"></div>';
     }).join('');
