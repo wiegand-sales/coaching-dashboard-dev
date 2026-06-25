@@ -225,6 +225,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -340,6 +341,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -2931,6 +2933,19 @@ function saveEmpZiele(){
     {id:'marge',rk:'margeGesamt',dk:'margeDir'},
   ];
   extraKPIMap.forEach(function(f){
+    var el=document.getElementById('es-'+f.id);
+    var dl=document.getElementById('es-d-'+f.id);
+    if(el&&el.value!=='')emp.targets[f.rk]=parseFloat(el.value)||0;
+    if(dl)emp.targets[f.dk]=dl.value;
+  });
+  var _ekm=[
+    {id:'crYes',rk:'crYes',dk:'crYesDir'},
+    {id:'aktiv',rk:'aktivitaeten',dk:'aktivDir'},
+    {id:'convOEM',rk:'convOEM',dk:'convOEMDir'},
+    {id:'optGes',rk:'optGesamt',dk:'optGesamtDir'},
+    {id:'marge',rk:'margeGesamt',dk:'margeDir'}
+  ];
+  _ekm.forEach(function(f){
     var el=document.getElementById('es-'+f.id);
     var dl=document.getElementById('es-d-'+f.id);
     if(el&&el.value!=='')emp.targets[f.rk]=parseFloat(el.value)||0;
