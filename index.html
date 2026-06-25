@@ -230,6 +230,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -345,6 +346,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -947,7 +949,7 @@ function empTargets(emp){
     crYes:       {val:val('crYes',null),             dir:dir('crYesDir','crYes','gte')},
     aktivitaeten:{val:val('aktivitaeten',null),       dir:dir('aktivDir','aktivitaeten','gte')},
     convOEM:     {val:val('convOEM',null),            dir:dir('convOEMDir','convOEM','gte')},
-    optGesamt:   {val:val('optGesamt',null),          dir:dir('optGesamtDir','optGesamt','gte')},
+    optGesamt:   {val:val('optGesamt',null)!=null?val('optGesamt',null):val('optPerDay',null), dir:dir('optGesamtDir','optGesamt','gte')},
     margeGesamt: {val:val('margeGesamt',null),        dir:dir('margeDir','margeGesamt','gte')}
   };
 }
@@ -2218,7 +2220,7 @@ function renderTab(){
       html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">';
       [{lbl:'Aktivitäten/Tag',id:'aktiv',did:'aktivDir',fv:_tr.aktivitaeten!=null?_tr.aktivitaeten:(t.aktivitaeten&&t.aktivitaeten.val!=null?t.aktivitaeten.val:''),fd:_tr.aktivDir||(t.aktivitaeten?t.aktivitaeten.dir:'gte'),unit:''},
        {lbl:'Conv. OEM/Tag',id:'convOEM',did:'convOEMDir',fv:_tr.convOEM!=null?_tr.convOEM:(t.convOEM&&t.convOEM.val!=null?t.convOEM.val:''),fd:_tr.convOEMDir||(t.convOEM?t.convOEM.dir:'gte'),unit:''},
-       {lbl:'Opt. Gesamt/Tag',id:'optDay',did:'optPerDayDir',fv:_tr.optPerDay!=null?_tr.optPerDay:t.optPerDay.val,fd:_tr.optPerDayDir||t.optPerDay.dir,unit:''},
+       {lbl:'Opt. Gesamt/Tag',id:'optDay',did:'optPerDayDir',fv:_tr.optGesamt!=null?_tr.optGesamt:(t.optGesamt&&t.optGesamt.val!=null?t.optGesamt.val:''),fd:_tr.optGesamtDir||(t.optGesamt?t.optGesamt.dir:'gte'),unit:''},
        {lbl:'Opt. / Stunde',id:'opt',did:'optPerHDir',fv:_tr.optPerH!=null?_tr.optPerH:t.optPerH.val,fd:_tr.optPerHDir||t.optPerH.dir,unit:'',step:0.1}
       ].forEach(function(f){
         var step=f.step||1;
@@ -2302,7 +2304,7 @@ function renderTab(){
 
       // Feste Y-Achsen-Skalen
       var yScales={
-        aktivitaeten:{min:0,max:50,step:10},
+        aktivitaeten:{min:0,max:300,step:50},
         convOEM:     {min:0,max:50,step:10},
         optGesamt:   {min:0,max:50,step:10},
         crOEM:       {min:0,max:100,step:20},
@@ -2890,7 +2892,7 @@ function saveEmpZiele(){
   var emp=employees.find(function(e){return e.id===selectedEmp;});
   if(!emp)return;
   if(!emp.targets)emp.targets={};
-  [{id:'crOEM',rk:'crOEM',dk:'crOEMDir'},{id:'crTW',rk:'crTW',dk:'crTWDir'},{id:'crYes',rk:'crYes',dk:'crYesDir'},{id:'crSY',rk:'crSuperYes',dk:'crSYDir'},{id:'crMY',rk:'crMegaYes',dk:'crMYDir'},{id:'convOEM',rk:'convOEM',dk:'convOEMDir'},{id:'opt',rk:'optPerH',dk:'optPerHDir'},{id:'optDay',rk:'optPerDay',dk:'optPerDayDir'},{id:'aktiv',rk:'aktivitaeten',dk:'aktivDir'},{id:'marge',rk:'margeGesamt',dk:'margeDir'}].forEach(function(f){
+  [{id:'crOEM',rk:'crOEM',dk:'crOEMDir'},{id:'crTW',rk:'crTW',dk:'crTWDir'},{id:'crYes',rk:'crYes',dk:'crYesDir'},{id:'crSY',rk:'crSuperYes',dk:'crSYDir'},{id:'crMY',rk:'crMegaYes',dk:'crMYDir'},{id:'convOEM',rk:'convOEM',dk:'convOEMDir'},{id:'opt',rk:'optPerH',dk:'optPerHDir'},{id:'optDay',rk:'optGesamt',dk:'optGesamtDir'},{id:'aktiv',rk:'aktivitaeten',dk:'aktivDir'},{id:'marge',rk:'margeGesamt',dk:'margeDir'}].forEach(function(f){
     var el=document.getElementById('es-'+f.id);
     var dl=document.getElementById('es-d-'+f.id);
     if(el&&el.value!=='')emp.targets[f.rk]=parseFloat(el.value);
