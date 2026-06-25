@@ -888,7 +888,7 @@ function phaseBg(ph){return{Aktiv:RS['Yes'].bg,Onboarding:RS['Teilweise'].bg,Ent
 function phaseCol(ph){return{Aktiv:RS['Yes'].color,Onboarding:RS['Teilweise'].color,Entwicklung:RS['Super Yes'].color}[ph]||'#6b6b67';}
 function getPerf(id,days){
   var p=performance[id]||[];
-  var cutoff=new Date('2026-06-13T00:00:00');
+  var cutoff=new Date();
   cutoff.setDate(cutoff.getDate()-days);
   return p.filter(function(x){return new Date(x.date)>=cutoff;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
 }
@@ -927,12 +927,17 @@ function empTargets(emp){
   function val(key,fallback){return t[key]!=null?t[key]:((g[key]&&g[key].val!=null)?g[key].val:fallback);}
   function dir(dirKey,valKey,fallback){return t[dirKey]||((g[valKey]&&g[valKey].dir)?g[valKey].dir:fallback);}
   return {
-    crOEM:      {val:val('crOEM',55),          dir:dir('crOEMDir','crOEM','gte')},
-    crTeilweise:{val:val('crTW',25),            dir:dir('crTWDir','crTeilweise','lte')},
-    crSuperYes: {val:val('crSuperYes',12),      dir:dir('crSYDir','crSuperYes','gte')},
-    crMegaYes:  {val:val('crMegaYes',8),        dir:dir('crMYDir','crMegaYes','gte')},
-    optPerH:    {val:val('optPerH',2.0),        dir:dir('optPerHDir','optPerH','gte')},
-    optPerDay:  {val:val('optPerDay',16),       dir:dir('optPerDayDir','optPerDay','gte')}
+    crOEM:       {val:val('crOEM',55),          dir:dir('crOEMDir','crOEM','gte')},
+    crTeilweise: {val:val('crTW',25),            dir:dir('crTWDir','crTeilweise','lte')},
+    crYes:       {val:val('crYes',null),          dir:dir('crYesDir','crYes','gte')},
+    crSuperYes:  {val:val('crSuperYes',12),       dir:dir('crSYDir','crSuperYes','gte')},
+    crMegaYes:   {val:val('crMegaYes',8),         dir:dir('crMYDir','crMegaYes','gte')},
+    optPerH:     {val:val('optPerH',2.0),         dir:dir('optPerHDir','optPerH','gte')},
+    optPerDay:   {val:val('optPerDay',16),         dir:dir('optPerDayDir','optPerDay','gte')},
+    aktivitaeten:{val:val('aktivitaeten',null),    dir:dir('aktivDir','aktivitaeten','gte')},
+    convOEM:     {val:val('convOEM',null),         dir:dir('convOEMDir','convOEM','gte')},
+    optGesamt:   {val:val('optGesamt',null),       dir:dir('optGesamtDir','optGesamt','gte')},
+    margeGesamt: {val:val('margeGesamt',null),     dir:dir('margeDir','margeGesamt','gte')}
   };
 }
 
@@ -1527,7 +1532,8 @@ function renderTab(){
     var empT=empTargets(emp);
     var perf7=getPerf(emp.id,7);
     var perfAll=(performance[emp.id]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
-    function avg7(key){if(!perf7.length)return null;return perf7.reduce(function(a,x){return a+(x[key]||0);},0)/perf7.length;}
+    var perfRangeData=getPerf(emp.id,perfRange);
+    function avgRange(key){if(!perfRangeData.length)return null;return perfRangeData.reduce(function(a,x){return a+(x[key]||0);},0)/perfRangeData.length;}
     function kpiCol(v,t,dir){if(v===null)return 'var(--text3)';return(dir==='lte'?v<=t:v>=t)?'var(--teal)':'var(--red)';}
     var kpis=[
       {label:'CR OEM', key:'crOEM',      target:empT.crOEM.val,      dir:empT.crOEM.dir,      pct:true},
@@ -1538,7 +1544,7 @@ function renderTab(){
     ];
     html+='<div class="g5" style="margin-bottom:16px">';
     kpis.forEach(function(k){
-      var v=avg7(k.key);var vR=v!==null?(k.pct?Math.round(v):+v.toFixed(1)):null;
+      var v=avgRange(k.key);var vR=v!==null?(k.pct?Math.round(v):+v.toFixed(1)):null;
       var col=v!==null?kpiCol(v,k.target,k.dir):'var(--text3)';
       var hit=v!==null&&(k.dir==='lte'?v<=k.target:v>=k.target);
       html+='<div class="kpi" style="border-top-color:'+col+'">'
@@ -2125,23 +2131,7 @@ function renderTab(){
   
   // ── EMP SETTINGS TAB ──
   if(activeTab==='emp-settings'){
-    var _et=empTargets(emp);
-    var _raw=emp.targets||{};
-    // t gives form-ready values: flat numbers + dir strings, individual first
-    var t={
-      crOEM:     _raw.crOEM!=null?_raw.crOEM:_et.crOEM.val,
-      crOEMDir:  _raw.crOEMDir||_et.crOEM.dir,
-      crTW:      _raw.crTW!=null?_raw.crTW:_et.crTeilweise.val,
-      crTWDir:   _raw.crTWDir||_et.crTeilweise.dir,
-      crSuperYes:_raw.crSuperYes!=null?_raw.crSuperYes:_et.crSuperYes.val,
-      crSYDir:   _raw.crSYDir||_et.crSuperYes.dir,
-      crMegaYes: _raw.crMegaYes!=null?_raw.crMegaYes:_et.crMegaYes.val,
-      crMYDir:   _raw.crMYDir||_et.crMegaYes.dir,
-      optPerH:   _raw.optPerH!=null?_raw.optPerH:_et.optPerH.val,
-      optPerHDir:_raw.optPerHDir||_et.optPerH.dir,
-      optPerDay: _raw.optPerDay!=null?_raw.optPerDay:_et.optPerDay.val,
-      optPerDayDir:_raw.optPerDayDir||_et.optPerDay.dir
-    };
+    var t=empTargets(emp);
     var swatches=COLORS.map(function(col,i){
       return '<div onclick="setEmpColor('+i+')" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:'+col.bg+';border:3px solid '+(emp.color===i?col.text:'transparent')+';display:inline-block;margin-right:6px;margin-bottom:6px;transition:all .15s"></div>';
     }).join('');
@@ -2177,6 +2167,32 @@ function renderTab(){
       +'<div><label>Vertragsende</label><input type="date" id="es-end" value="'+(emp.endDate||'')+'"></div>'
       +'</div>'
       +'<div style="margin-bottom:16px"><label>Avatar-Farbe</label><div style="margin-top:8px">'+swatches+'</div></div>'
+      
+      // Extra Zielwerte
+      html+='<div style="margin-top:12px">';
+      html+='<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;padding-top:8px;border-top:1px solid var(--border)">Weitere Zielwerte (Performance Trend)</div>';
+      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+      [
+        {id:'crYes',  dir:'crYesDir',    lbl:'CR Yes %',        key:'crYes',        unit:'%', step:1,  max:100},
+        {id:'aktiv',  dir:'aktivDir',    lbl:'Aktivitäten/Tag', key:'aktivitaeten', unit:'',  step:1,  max:999},
+        {id:'convOEM',dir:'convOEMDir',  lbl:'Conv. OEM/Tag',   key:'convOEM',      unit:'',  step:1,  max:999},
+        {id:'optGes', dir:'optGesamtDir',lbl:'Opt. Gesamt/Tag', key:'optGesamt',    unit:'',  step:1,  max:999},
+        {id:'marge',  dir:'margeDir',    lbl:'Marge Ziel €',    key:'margeGesamt',  unit:'€', step:10, max:99999},
+      ].forEach(function(f){
+        var fv=_raw[f.key]!=null?_raw[f.key]:(_et[f.key]&&_et[f.key].val!=null?_et[f.key].val:'');
+        var fd2=_raw[f.dir]||(_et[f.key]?_et[f.key].dir:'gte');
+        html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">';
+        html+='<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">'+f.lbl+'</div>';
+        html+='<div style="display:flex;align-items:center;gap:8px">';
+        html+='<select id="es-d-'+f.id+'" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">';
+        html+='<option value="gte"'+(fd2==='gte'?' selected':'')+'>mind.</option>';
+        html+='<option value="lte"'+(fd2==='lte'?' selected':'')+'>max.</option>';
+        html+='</select>';
+        html+='<input type="number" id="es-'+f.id+'" value="'+fv+'" step="'+f.step+'" min="0" max="'+f.max+'" placeholder="—" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">';
+        if(f.unit)html+='<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">'+f.unit+'</span>';
+        html+='</div></div>';
+      });
+      html+='</div></div>';
       +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Änderungen speichern</button>'
       +'</div>'
 
@@ -2277,7 +2293,7 @@ function renderTab(){
       var vals=data.map(function(d){return d[m.f]||0;});
       var empObj=employees.find(function(x){return x.id===selectedEmp;});
       var empT=empTargets(empObj||{});
-      var tMap={crOEM:'crOEM',crTeilweise:'crTeilweise',crSuperYes:'crSuperYes',crMegaYes:'crMegaYes',optPerH:'optPerH'};
+      var tMap={crOEM:'crOEM',crTeilweise:'crTeilweise',crYes:'crYes',crSuperYes:'crSuperYes',crMegaYes:'crMegaYes',optPerH:'optPerH',aktivitaeten:'aktivitaeten',convOEM:'convOEM',optGesamt:'optGesamt',margeGesamt:'margeGesamt'};
       var tk=tMap[perfMetric];
       var target=tk&&empT[tk]?empT[tk].val:null;
 
@@ -2896,6 +2912,15 @@ function saveEmpZiele(){
   emp.targets.optPerHDir=document.getElementById('es-d-opt').value;
   emp.targets.optPerDay=parseFloat(document.getElementById('es-optDay').value)||16;
   emp.targets.optPerDayDir=document.getElementById('es-d-optDay').value;
+  ['crYes','aktiv','convOEM','optGes','marge'].forEach(function(id){
+    var el=document.getElementById('es-'+id);
+    var del=document.getElementById('es-d-'+id);
+    if(!el||!el.value)return;
+    var keyMap={crYes:'crYes',aktiv:'aktivitaeten',convOEM:'convOEM',optGes:'optGesamt',marge:'margeGesamt'};
+    var dirMap={crYes:'crYesDir',aktiv:'aktivDir',convOEM:'convOEMDir',optGes:'optGesamtDir',marge:'margeDir'};
+    emp.targets[keyMap[id]]=parseFloat(el.value);
+    if(del)emp.targets[dirMap[id]]=del.value;
+  });
   lsSave();
   alert('Ziele gespeichert für '+emp.name+'.');
   renderTab();
