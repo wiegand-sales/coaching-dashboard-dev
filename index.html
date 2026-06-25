@@ -228,6 +228,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -343,6 +344,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -2155,39 +2157,39 @@ function renderTab(){
     var ROLLEN=['Vertriebsmitarbeiter','Senior Vertriebsmitarbeiter','Sales Coach'];
 
     html+='<div class="card"><div class="card-title"><i class="ti ti-user"></i> Stammdaten</div>'
-      +'<div class="f2" style="margin-bottom:12px">'
-      +'<div><label>Vollständiger Name</label><input type="text" id="es-name" value="'+emp.name+'"></div>'
-      +'<div><label>Position</label>'
-      +'<select id="es-role" onchange="var cv=this.value;if(cv===\'__new__\'){var nv=prompt(\'Neue Position eingeben:\');if(nv&&nv.trim()){var opt=document.createElement(\'option\');opt.value=nv.trim();opt.text=nv.trim();this.add(opt);this.value=nv.trim();}}" >'
-      +'<option'+(emp.role==='SR'?' selected':'')+'>SR</option>'
-      +'<option'+(emp.role==='SE'?' selected':'')+'>SE</option>'
-      +'<option'+(emp.role==='VLC'?' selected':'')+'>VLC</option>'
-      +'<option'+(emp.role==='SDM'?' selected':'')+'>SDM</option>'
-      +'<option'+(emp.role==='SC'?' selected':'')+'>SC</option>'
-      +'<option value="__new__">+ Neue Position hinzufügen</option>'
-      +'</select></div>'
-      +'</div>'
-      +'<div class="f3" style="margin-bottom:12px">'
-      +'<div><label>Phase</label><select id="es-phase">'
-      +'<option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option>'
-      +'<option'+(emp.phase==='Aktiv'?' selected':'')+'>Aktiv</option>'
-      +'</select></div>'
-      +'<div><label>Anstellung</label><select id="es-contract">'
-      +'<option value="Vollzeit"'+(emp.contract==='Vollzeit'||emp.contract==='full'?' selected':'')+'>Vollzeit</option>'
-      +'<option value="Teilzeit"'+(emp.contract==='Teilzeit'||emp.contract==='part'?' selected':'')+'>Teilzeit</option>'
-      +'</select></div>'
-      +'<div><label>Stunden / Woche</label><input type="number" id="es-hours" value="'+(emp.hours||40)+'" min="1" max="60"></div>'
-      +'</div>'
-      +'<div class="f2" style="margin-bottom:12px">'
-      +'<div><label>Vertragsbeginn</label><input type="date" id="es-start" value="'+(emp.startDate||'')+'"></div>'
-      +'<div><label>Vertragsende</label><input type="date" id="es-end" value="'+(emp.endDate||'')+'"></div>'
-      +'</div>'
-      +'<div style="margin-bottom:16px"><label>Avatar-Farbe</label><div style="margin-top:8px">'+swatches+'</div></div>'
-      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Änderungen speichern</button>'
-      +'</div>'
+      html+='<div class="f2" style="margin-bottom:12px">'
+      html+='<div><label>Vollständiger Name</label><input type="text" id="es-name" value="'+emp.name+'"></div>'
+      html+='<div><label>Position</label>'
+      html+='<select id="es-role" onchange="var cv=this.value;if(cv===\'__new__\'){var nv=prompt(\'Neue Position eingeben:\');if(nv&&nv.trim()){var opt=document.createElement(\'option\');opt.value=nv.trim();opt.text=nv.trim();this.add(opt);this.value=nv.trim();}}" >'
+      html+='<option'+(emp.role==='SR'?' selected':'')+'>SR</option>'
+      html+='<option'+(emp.role==='SE'?' selected':'')+'>SE</option>'
+      html+='<option'+(emp.role==='VLC'?' selected':'')+'>VLC</option>'
+      html+='<option'+(emp.role==='SDM'?' selected':'')+'>SDM</option>'
+      html+='<option'+(emp.role==='SC'?' selected':'')+'>SC</option>'
+      html+='<option value="__new__">+ Neue Position hinzufügen</option>'
+      html+='</select></div>'
+      html+='</div>'
+      html+='<div class="f3" style="margin-bottom:12px">'
+      html+='<div><label>Phase</label><select id="es-phase">'
+      html+='<option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option>'
+      html+='<option'+(emp.phase==='Aktiv'?' selected':'')+'>Aktiv</option>'
+      html+='</select></div>'
+      html+='<div><label>Anstellung</label><select id="es-contract">'
+      html+='<option value="Vollzeit"'+(emp.contract==='Vollzeit'||emp.contract==='full'?' selected':'')+'>Vollzeit</option>'
+      html+='<option value="Teilzeit"'+(emp.contract==='Teilzeit'||emp.contract==='part'?' selected':'')+'>Teilzeit</option>'
+      html+='</select></div>'
+      html+='<div><label>Stunden / Woche</label><input type="number" id="es-hours" value="'+(emp.hours||40)+'" min="1" max="60"></div>'
+      html+='</div>'
+      html+='<div class="f2" style="margin-bottom:12px">'
+      html+='<div><label>Vertragsbeginn</label><input type="date" id="es-start" value="'+(emp.startDate||'')+'"></div>'
+      html+='<div><label>Vertragsende</label><input type="date" id="es-end" value="'+(emp.endDate||'')+'"></div>'
+      html+='</div>'
+      html+='<div style="margin-bottom:16px"><label>Avatar-Farbe</label><div style="margin-top:8px">'+swatches+'</div></div>'
+      html+='<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Änderungen speichern</button>'
+      html+='</div>'
 
-      +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individuelle KPI-Ziele</div>'
-      +'<p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Diese Werte überschreiben die globalen Standards für diesen Mitarbeiter und werden in allen Alerts und der Teamübersicht verwendet.</p>'
+      html+='<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individuelle KPI-Ziele</div>'
+      html+='<p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Diese Werte überschreiben die globalen Standards für diesen Mitarbeiter und werden in allen Alerts und der Teamübersicht verwendet.</p>'
       
 
       // ── CR Kategorie ──
