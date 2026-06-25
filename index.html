@@ -218,6 +218,7 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -333,6 +334,7 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
 
 
 
@@ -921,6 +923,13 @@ function empTargets(emp){
   };
 }
 
+
+function lsColGet(k){
+  try{var s=JSON.parse(localStorage.getItem('sfp_sb_col')||'{}');return !!s[k];}catch(e){return false;}
+}
+function lsColToggle(k){
+  try{var s=JSON.parse(localStorage.getItem('sfp_sb_col')||'{}');s[k]=!s[k];localStorage.setItem('sfp_sb_col',JSON.stringify(s));}catch(e){}
+}
 function renderSidebar(){
   var el=document.getElementById('empList');
   el.innerHTML='';
@@ -928,55 +937,61 @@ function renderSidebar(){
   if(view==='team')document.getElementById('nav-team').classList.add('active');
   var nc=document.getElementById('nav-coaching');if(nc)nc.classList.toggle('active',view==='coaching');
   if(view==='settings')document.getElementById('nav-settings').classList.add('active');
-  var HIDDEN=['SDM','SC'];
-  var visible=employees.filter(function(e){return e.active!==false&&HIDDEN.indexOf(e.team)<0;});
-  var groups=[
-    {key:'SE',label:'SE',members:visible.filter(function(e){return e.team==='SE';})},
-    {key:'SR',label:'SR',members:visible.filter(function(e){return e.team==='SR';})},
-    {key:'VLC',label:'VLC',members:visible.filter(function(e){return e.team==='VLC';})},
-  ];
-  var onboardingM=visible.filter(function(e){return e.phase==='Onboarding';});
-  if(onboardingM.length)groups.push({key:'OB',label:'Onboarding',members:onboardingM});
-  var CK='sfp_sb_col';
-  var col={};try{col=JSON.parse(localStorage.getItem(CK)||'{}');}catch(ex){}
-  function saveCol(){try{localStorage.setItem(CK,JSON.stringify(col));}catch(ex){}}
-  function empItem(emp){
-    var c=COLORS[emp.color%COLORS.length];
-    var r=lastRating(emp.id);var rs=r?RS[r]:null;
-    var al=checkAlerts(emp.id);
-    var d=document.createElement('div');
-    d.className='emp-item'+(view==='emp'&&emp.id===selectedEmp?' active':'');
-    var badge=rs?('<span class="emp-badge" style="background:'+rs.bg+';color:'+rs.color+'">'+(r==='Teilweise'?'T':r==='Yes'?'Y':r==='Super Yes'?'SY':'MY')+'</span>'):'';
-    var alrt=al.length?('<i class="ti ti-alert-triangle" style="font-size:13px;color:var(--amber);flex-shrink:0"></i>'):'';
-    var vlcBadge=emp.team==='VLC'?('<span style="font-size:9px;font-weight:700;color:var(--blue);background:var(--bg2);border-radius:3px;padding:1px 4px;flex-shrink:0;margin-right:2px">VLC</span>'):'';
-    d.innerHTML='<div class="av" style="width:32px;height:32px;font-size:12px;background:'+c.bg+';color:'+c.text+'">'+ini(emp.name)+'</div>'
-      +'<div style="flex:1;min-width:0"><div class="emp-name">'+emp.name+'</div><div class="emp-role">'+emp.role+'</div></div>'
-      +alrt+vlcBadge+badge;
-    d.onclick=(function(eid){return function(){selectedEmp=eid;view='emp';activeTab='performance';renderSidebar();renderMain();};})(emp.id);
-    return d;
-  }
-  function makeGroup(grp){
-    if(!grp.members.length)return;
-    var isCol=!!col[grp.key];
+
+  // Alle aktiven Mitarbeiter
+  var visible=employees.filter(function(e){return e.active!==false;});
+
+  // Onboarding separat, Rest nach Position (role)
+  var onboarding=visible.filter(function(e){return e.phase==='Onboarding';});
+  var aktiv=visible.filter(function(e){return e.phase!=='Onboarding';});
+
+  // Gruppen nach Position dynamisch ermitteln
+  var positions=[];
+  aktiv.forEach(function(e){
+    var r=e.role||e.team||'Sonstige';
+    if(positions.indexOf(r)<0)positions.push(r);
+  });
+  // Feste Reihenfolge: SE, SR, VLC, SDM, SC, dann Rest
+  var order=['SE','SR','VLC','SDM','SC'];
+  positions.sort(function(a,b){
+    var ai=order.indexOf(a); var bi=order.indexOf(b);
+    if(ai<0)ai=99; if(bi<0)bi=99;
+    return ai-bi;
+  });
+
+  var groups=[];
+  positions.forEach(function(pos){
+    var members=aktiv.filter(function(e){return (e.role||e.team||'Sonstige')===pos;});
+    if(members.length)groups.push({k:pos,label:pos,members:members});
+  });
+  if(onboarding.length)groups.push({k:'onboarding',label:'Onboarding',members:onboarding});
+
+  // Inaktive
+  var inactive=employees.filter(function(e){return e.active===false;});
+  if(inactive.length)groups.push({k:'inaktiv',label:'Inaktiv',members:inactive});
+
+  groups.forEach(function(g){
+    var collapsed=lsColGet(g.k);
+    var grpDiv=document.createElement('div');
+    grpDiv.className='sb-group';
+
     var hdr=document.createElement('div');
-    hdr.className='sb-group-header'+(isCol?' collapsed':'');
-    hdr.innerHTML=grp.label+' <span style="background:var(--purple-bg);color:var(--purple);border-radius:20px;padding:0 6px;font-size:9px;font-weight:700">'+grp.members.length+'</span><span class="sb-group-arrow">▾</span>';
-    var body=document.createElement('div');
-    body.className='sb-group-body';
-    body.style.maxHeight=isCol?'0':(grp.members.length*52+4)+'px';
-    if(!isCol){setTimeout(function(b){return function(){if(b.style.maxHeight!=='0px')b.style.maxHeight='none';};}(body),300);}
-    hdr.onclick=(function(k,h,b){return function(){
-      col[k]=!col[k];saveCol();
-      h.classList.toggle('collapsed',!!col[k]);
-      if(col[k]){b.style.maxHeight=b.scrollHeight+'px';requestAnimationFrame(function(){requestAnimationFrame(function(){b.style.maxHeight='0';});});}
-      else{b.style.maxHeight='0';requestAnimationFrame(function(){b.style.maxHeight=b.scrollHeight+'px';setTimeout(function(){if(!col[k])b.style.maxHeight='none';},260);});}
-    };})(grp.key,hdr,body);
-    grp.members.forEach(function(emp){body.appendChild(empItem(emp));});
-    el.appendChild(hdr);el.appendChild(body);
-  }
-  groups.forEach(makeGroup);
-  var inactive=employees.filter(function(e){return e.active===false&&HIDDEN.indexOf(e.team)<0;});
-  if(inactive.length)makeGroup({key:'INAKTIV',label:'Inaktiv',members:inactive});
+    hdr.className='sb-group-hdr';
+    hdr.innerHTML='<span class="sb-group-lbl">'+g.label+'</span><span class="sb-group-count">'+g.members.length+'</span><span class="sb-group-arr">'+(collapsed?'›':'⌄')+'</span>';
+    hdr.onclick=(function(gk){return function(){
+      lsColToggle(gk);
+      renderSidebar();
+    };})(g.k);
+    grpDiv.appendChild(hdr);
+
+    if(!collapsed){
+      g.members.forEach(function(emp){
+        var d=makeEmpCard(emp);
+        grpDiv.appendChild(d);
+      });
+    }
+    el.appendChild(grpDiv);
+  });
 }
 
 function setTeamRange(d){teamRange=d;renderTeam();}
