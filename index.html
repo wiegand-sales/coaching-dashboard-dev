@@ -201,6 +201,7 @@ tr:hover td{background:var(--bg2);}
 <div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;text-align:center;font-size:12px;font-weight:600;padding:5px">🚧 DEV / STAGING — <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#000;text-decoration:underline">→ Live</a></div>
 <div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;text-align:center;font-size:12px;font-weight:600;padding:5px">🚧 DEV / STAGING — <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#000;text-decoration:underline">→ Live</a></div>
 <div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;text-align:center;font-size:12px;font-weight:600;padding:5px">🚧 DEV / STAGING — <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#000;text-decoration:underline">→ Live</a></div>
+<div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;text-align:center;font-size:12px;font-weight:600;padding:5px">🚧 DEV / STAGING — <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#000;text-decoration:underline">→ Live</a></div>
 <div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;text-align:center;font-size:12px;font-weight:600;padding:5px;letter-spacing:0.5px">
   🚧 DEV / STAGING — Keine Produktivumgebung — <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#000;text-decoration:underline">→ Live</a>
 </div>
@@ -691,22 +692,25 @@ tr:hover td{background:var(--bg2);}
         pointRadius:0,fill:false,order:2
       });
     }
-    var canvas=document.getElementById('teamPerfChart');
-    if(!canvas){return;}
-    if(canvas._ci){try{canvas._ci.destroy();}catch(e){}}
-    canvas._ci=new Chart(canvas,{
-      type:'line',
-      data:{labels:labels,datasets:datasets},
-      options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:20,padding:12}}},
-        scales:{
-          x:{ticks:{font:{size:11},maxTicksLimit:12},grid:{display:false}},
-          y:{min:yS.min,max:yS.max,ticks:{font:{size:11},stepSize:yS.step},grid:{color:'rgba(0,0,0,0.05)'}}
+    // setTimeout nötig: Canvas braucht Browser-Layout nach innerHTML-Injection
+    setTimeout(function(){
+      var canvas=document.getElementById('teamPerfChart');
+      if(!canvas){return;}
+      if(canvas._ci){try{canvas._ci.destroy();}catch(e){}}
+      canvas._ci=new Chart(canvas,{
+        type:'line',
+        data:{labels:labels,datasets:datasets},
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:20,padding:12}}},
+          scales:{
+            x:{ticks:{font:{size:11},maxTicksLimit:12},grid:{display:false}},
+            y:{min:yS.min,max:yS.max,ticks:{font:{size:11},stepSize:yS.step},grid:{color:'rgba(0,0,0,0.05)'}}
+          }
         }
-      }
-    });
+      });
+    },50);
   })(allP, teamPerfMetric, teamRange||7, KPI_TARGETS);
 }
 
