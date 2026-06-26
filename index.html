@@ -198,6 +198,9 @@ tr:hover td{background:var(--bg2);}
 .sb-group-body{overflow:hidden;transition:max-height .25s ease;}</style>
 </head>
 <body>
+<div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;text-align:center;font-size:12px;font-weight:600;padding:5px;letter-spacing:0.5px">
+  🚧 DEV / STAGING — Keine Produktivumgebung — <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#000;text-decoration:underline">→ Live</a>
+</div>
 <div id="stg-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#BA7517;color:#fff;text-align:center;padding:6px 12px;font-size:12px;font-weight:600;font-family:inherit">⚠ STAGING · <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#fff;text-decoration:underline">→ Live</a></div><style>#stg-banner~*{margin-top:32px!important}.sidebar{top:32px!important;height:calc(100vh - 32px)!important}</style>
 
 
@@ -678,6 +681,7 @@ function lsSave(){
       KPI_TARGETS:KPI_TARGETS,
       settings:settings,
       ratingCriteria:ratingCriteria,
+      callRatings:callRatings,
       savedAt:new Date().toISOString()
     }));
   }catch(e){console.warn('lsSave failed:',e);}
@@ -702,6 +706,7 @@ function lsLoad(){
     if(d.KPI_TARGETS){KPI_TARGETS=d.KPI_TARGETS;CR_GOOD=KPI_TARGETS.crOEM.val;}
     if(d.settings)settings=d.settings;
     if(d.ratingCriteria)ratingCriteria=d.ratingCriteria;
+    if(d.callRatings)callRatings=d.callRatings;
     return true;
   }catch(e){console.warn('lsLoad failed:',e);return false;}
 }
@@ -907,6 +912,8 @@ var reviews={
      {id:6,type:'Performance-Gespräch',date:'2026-12-01',status:'geplant',notes:'',goals:'',rating:null,kpis:{}}],
   5:[{id:7,type:'Onboarding-Gespräch',date:'2026-08-01',status:'geplant',notes:'',goals:'',rating:null,kpis:{}}],
 };
+
+var callRatings={}; // {empId: [{id, date, auftragsnr, status, b2b, bewertetVon, scores:{...}, einwand, hinweis}]}
 
 // ── HELPERS ──
 function ini(n){return n.split(' ').map(function(x){return x[0];}).join('').toUpperCase().slice(0,2);}
@@ -1661,6 +1668,241 @@ function renderTab(){
     }
   }
 
+
+
+  // ── CALL PERFORMANCE TAB ──
+  if(activeTab==='call-performance'){
+    var callRat=(callRatings[emp.id]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+
+    var CALL_CATS=[
+      {key:'opener',   label:'Einstieg',           weight:0.05, items:['intro','ziel']},
+      {key:'einwand',  label:'Einwandsentkräftung', weight:0.35, items:['qualifizieren','solidarisierung','umgang','entkraeftung','testabschluss','vertrauen']},
+      {key:'loop',     label:'Loop / Dranbleiben',  weight:0.10, items:['dranbleiben']},
+      {key:'bedarf',   label:'Bedarfserweiterung',  weight:0.15, items:['erweitern','quantifizieren','potenzial']},
+      {key:'abschluss',label:'Abschluss / Mega Yes',weight:0.20, items:['abschlussversuch','angebotsqualitaet','kaufsignale']},
+      {key:'gespraech',label:'Gesprächsführung',    weight:0.10, items:['struktur','kontrolle','klarheit','fragequalitaet']},
+      {key:'zusammenfassung',label:'Zusammenfassung',weight:0.05,items:['naechsteschritte']},
+    ];
+    var ALL_SCORES=['intro','ziel','qualifizieren','solidarisierung','umgang','entkraeftung','testabschluss','vertrauen','dranbleiben','erweitern','quantifizieren','potenzial','abschlussversuch','angebotsqualitaet','kaufsignale','struktur','kontrolle','klarheit','fragequalitaet','naechsteschritte'];
+    var CAT_COLORS={opener:'#534AB7',einwand:'#C47A1E',loop:'#1D9E75',bedarf:'#0A6B55',abschluss:'#BA7517',gespraech:'#888780',zusammenfassung:'#2776d2'};
+
+    function catAvg(rat,cat){
+      var items=cat.items;
+      var vals=items.map(function(k){return rat.scores&&rat.scores[k]?rat.scores[k]:0;}).filter(function(v){return v>0;});
+      if(!vals.length)return 0;
+      return vals.reduce(function(a,b){return a+b;},0)/vals.length;
+    }
+    function totalScore(rat){
+      var sum=0;
+      CALL_CATS.forEach(function(cat){
+        var avg=catAvg(rat,cat);
+        sum+=avg*cat.weight*25; // scale to 100
+      });
+      return sum;
+    }
+    function scoreCol(v){return v>=3.5?'var(--teal)':v>=2.5?'var(--purple)':v>=1.5?'var(--amber)':'var(--red)';}
+
+    // ─ Header: KPI tiles ─
+    if(callRat.length){
+      var last3=callRat.slice(0,3);
+      var avgTotal=callRat.reduce(function(a,r){return a+totalScore(r);},0)/callRat.length;
+      var avgCatScores={};
+      CALL_CATS.forEach(function(cat){
+        avgCatScores[cat.key]=callRat.reduce(function(a,r){return a+catAvg(r,cat);},0)/callRat.length;
+      });
+      html+='<div class="g5" style="margin-bottom:16px">';
+      // Gesamt KPI
+      var tCol=avgTotal>=75?'var(--teal)':avgTotal>=50?'var(--amber)':'var(--red)';
+      html+='<div class="kpi" style="border-top-color:'+tCol+';grid-column:span 1">'
+        +'<div class="kpi-label" style="color:'+tCol+'">Ø Gesamt</div>'
+        +'<div class="kpi-val" style="color:'+tCol+'">'+avgTotal.toFixed(0)+'<span style="font-size:12px;font-weight:400">/100</span></div>'
+        +'<div class="kpi-sub">'+callRat.length+' Bewertung'+(callRat.length!==1?'en':'')+'</div>'
+        +'</div>';
+      // Category KPIs (show first 4)
+      CALL_CATS.slice(0,4).forEach(function(cat){
+        var v=avgCatScores[cat.key];
+        var col=scoreCol(v);
+        html+='<div class="kpi" style="border-top-color:'+CAT_COLORS[cat.key]+'">'
+          +'<div class="kpi-label" style="color:'+CAT_COLORS[cat.key]+'">'+cat.label+'</div>'
+          +'<div class="kpi-val" style="color:'+CAT_COLORS[cat.key]+'">'+v.toFixed(1)+'<span style="font-size:12px;font-weight:400">/4</span></div>'
+          +'<div class="kpi-sub" style="color:'+col+'">'+Math.round(cat.weight*100)+'% Gewicht</div>'
+          +'</div>';
+      });
+      html+='</div>';
+    }
+
+    // ─ 2-Spalten Layout: Radar + Verlauf ─
+    if(callRat.length){
+      var showCall=callRat[0];
+      var _selCall=window._selCallId;
+      if(_selCall){var fc2=callRat.find(function(r){return r.id===_selCall;});if(fc2)showCall=fc2;}
+
+      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">';
+
+      // ─ Links: Radar Chart ─
+      html+='<div style="display:flex;flex-direction:column;gap:12px">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between">';
+      html+='<div class="sec-title" style="margin:0">Call Profil</div>';
+      if(callRat.length>1){
+        html+='<select onchange="window._selCallId=parseInt(this.value);renderTab()" style="font-size:12px;padding:4px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);cursor:pointer">';
+        callRat.forEach(function(r,i){
+          var sel=(showCall&&r.id===showCall.id)?' selected':'';
+          html+='<option value="'+r.id+'"'+sel+'>'+r.date+(i===0?' ★':'')+'</option>';
+        });
+        html+='</select>';
+      }
+      html+='</div>';
+      html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;flex:1">';
+      html+='<canvas id="callRadarChart" height="300"></canvas>';
+      // Category avg tiles
+      html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px">';
+      CALL_CATS.forEach(function(cat){
+        var v=catAvg(showCall,cat);
+        var col=scoreCol(v);
+        html+='<div style="text-align:center;padding:6px 4px;background:var(--bg2);border-radius:var(--r-md)">'
+          +'<div style="font-size:9px;font-weight:700;color:'+CAT_COLORS[cat.key]+'">'+cat.label.split('/')[0].trim().toUpperCase().slice(0,6)+'</div>'
+          +'<div style="font-size:16px;font-weight:700;color:'+col+'">'+v.toFixed(1)+'</div>'
+          +'</div>';
+      });
+      html+='</div>';
+      html+='</div>';
+      // Meta info box
+      var tscore=totalScore(showCall);
+      var tcol=tscore>=75?'var(--teal)':tscore>=50?'var(--amber)':'var(--red)';
+      html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;font-size:12px">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+      html+='<div style="font-weight:600;font-size:13px">Call Details</div>';
+      html+='<div style="font-size:22px;font-weight:700;color:'+tcol+'">'+tscore.toFixed(0)+'/100</div>';
+      html+='</div>';
+      var metaRows=[
+        ['Datum', showCall.date||'—'],
+        ['Auftragsnr.', showCall.auftragsnr||'—'],
+        ['Status', showCall.status==='ja'?'✅ Abschluss':'❌ Kein Abschluss'],
+        ['B2B / B2C', showCall.b2b||'—'],
+        ['Bewertet von', showCall.bewertetVon||'—'],
+        ['Einwand', showCall.einwand||'—'],
+      ];
+      metaRows.forEach(function(row){
+        html+='<div style="display:flex;gap:8px;padding:5px 0;border-top:1px solid var(--border)">'
+          +'<div style="width:90px;color:var(--text2);flex-shrink:0">'+row[0]+'</div>'
+          +'<div style="font-weight:500">'+row[1]+'</div></div>';
+      });
+      if(showCall.hinweis){
+        html+='<div style="margin-top:8px;padding:8px;background:var(--bg2);border-radius:var(--r-md);color:var(--text2);font-style:italic">'+showCall.hinweis+'</div>';
+      }
+      html+='</div>';
+      html+='</div>'; // end left col
+
+      // ─ Rechts: Balken Detailansicht ─
+      html+='<div style="display:flex;flex-direction:column;gap:12px">';
+      html+='<div class="sec-title">Aktuelle Bewertung</div>';
+      html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">';
+      var ITEM_LABELS={
+        intro:'Intro / Einstieg', ziel:'Ziel des Calls',
+        qualifizieren:'Einwand qualifizieren', solidarisierung:'Solidarisierung', umgang:'Umgang mit Einwand',
+        entkraeftung:'Entkräftung', testabschluss:'Testabschluss', vertrauen:'Vertrauen aufbauen',
+        dranbleiben:'Dranbleiben / Re-Opening',
+        erweitern:'Bedarf erweitern', quantifizieren:'Bedarf quantifizieren', potenzial:'Potenzial erkennen',
+        abschlussversuch:'Abschlussversuch', angebotsqualitaet:'Angebotsqualität', kaufsignale:'Kaufsignale nutzen',
+        struktur:'Struktur', kontrolle:'Gesprächskontrolle', klarheit:'Klarheit', fragequalitaet:'Fragequalität',
+        naechsteschritte:'Zusammenfassung & nächste Schritte'
+      };
+      CALL_CATS.forEach(function(cat){
+        html+='<div style="padding:6px 14px;background:rgba(0,0,0,0.03);border-top:2px solid '+CAT_COLORS[cat.key]+'">';
+        html+='<span style="font-size:10px;font-weight:700;color:'+CAT_COLORS[cat.key]+'">'+cat.label.toUpperCase()+' ('+Math.round(cat.weight*100)+'%)</span></div>';
+        cat.items.forEach(function(k){
+          var v=showCall.scores&&showCall.scores[k]?showCall.scores[k]:0;
+          if(!v)return;
+          var bc=v>=3.5?'var(--teal)':v>=2.5?'var(--purple)':v>=1.5?'var(--amber)':'var(--red)';
+          html+='<div style="padding:7px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px">';
+          html+='<div style="width:145px;font-size:12px;flex-shrink:0">'+ITEM_LABELS[k]+'</div>';
+          html+='<div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden">';
+          html+='<div style="height:100%;width:'+(v/4*100)+'%;background:'+bc+';border-radius:3px"></div></div>';
+          html+='<div style="width:22px;text-align:right;font-size:13px;font-weight:700;color:'+bc+'">'+v+'</div>';
+          html+='</div>';
+        });
+      });
+      html+='</div>';
+      html+='<button class="btn btn-primary" style="width:100%;margin-top:auto" onclick="openCallBewertung('+emp.id+')"><i class="ti ti-phone-plus"></i> Call bewerten</button>';
+      html+='</div>';
+
+      html+='</div>'; // end grid
+    } else {
+      // Empty state
+      html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:48px;text-align:center;color:var(--text3);margin-bottom:16px">'
+        +'<i class="ti ti-phone" style="font-size:36px;display:block;margin-bottom:12px"></i>'
+        +'<div style="font-size:15px;font-weight:600;margin-bottom:6px">Noch keine Call-Bewertungen</div>'
+        +'<div style="font-size:13px;margin-bottom:20px">Bewerte das erste Gespräch um den Call Score zu sehen</div>'
+        +'<button class="btn btn-primary" onclick="openCallBewertung('+emp.id+')"><i class="ti ti-phone-plus"></i> Call bewerten</button>'
+        +'</div>';
+    }
+
+    // ─ Tabelle alle Calls ─
+    html+='<div class="sec-title" style="margin-bottom:10px">Bewertungs-Historie</div>';
+    if(!callRat.length){
+      html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;text-align:center;color:var(--text3)">Noch keine Bewertungen vorhanden</div>';
+    } else {
+      html+='<div class="tbl"><table><thead><tr>'
+        +'<th>Datum</th><th>Auftragsnr.</th><th>Status</th><th>B2B/C</th>'
+        +'<th>Einstieg</th><th>Einwand</th><th>Loop</th><th>Bedarf</th><th>Abschluss</th><th>Gespräch</th><th>Zusammenf.</th>'
+        +'<th>Score</th><th>Bewertet von</th>'
+        +'</tr></thead><tbody>';
+      callRat.forEach(function(r,i){
+        var ts=totalScore(r);
+        var tcol=ts>=75?'var(--teal)':ts>=50?'var(--amber)':'var(--red)';
+        html+='<tr style="'+(i===0?'background:var(--bg2);font-weight:600;':'')+'">';
+        html+='<td style="white-space:nowrap;font-weight:500">'+fd(r.date)+(i===0?' ★':'')+'</td>';
+        html+='<td style="color:var(--text2)">'+( r.auftragsnr||'—')+'</td>';
+        html+='<td>'+(r.status==='ja'?'<span style="color:var(--teal);font-weight:600">✓ Ja</span>':'<span style="color:var(--red)">✗ Nein</span>')+'</td>';
+        html+='<td style="color:var(--text2)">'+(r.b2b||'—')+'</td>';
+        CALL_CATS.forEach(function(cat){
+          var v=catAvg(r,cat);
+          var col=scoreCol(v);
+          html+='<td style="text-align:center;font-weight:600;color:'+col+'">'+(v>0?v.toFixed(1):'—')+'</td>';
+        });
+        html+='<td style="text-align:center;font-weight:700;color:'+tcol+'">'+ts.toFixed(0)+'</td>';
+        html+='<td style="color:var(--text2);font-size:11px">'+(r.bewertetVon||'—')+'</td>';
+        html+='</tr>';
+      });
+      html+='</tbody></table></div>';
+    }
+
+    // Radar Chart JS
+    if(callRat.length){
+      var showCall2=callRat[0];
+      var _sc2=window._selCallId;
+      if(_sc2){var fc3=callRat.find(function(r){return r.id===_sc2;});if(fc3)showCall2=fc3;}
+      (function(rat,cats,catcols){
+        setTimeout(function(){
+          var canvas=document.getElementById('callRadarChart');
+          if(!canvas)return;
+          if(canvas._ci){canvas._ci.destroy();}
+          var labels=cats.map(function(c){return c.label;});
+          var data=cats.map(function(c){return catAvg(rat,c);});
+          var col='#534AB7';
+          canvas._ci=new Chart(canvas,{
+            type:'radar',
+            data:{
+              labels:labels,
+              datasets:[{
+                data:data,
+                backgroundColor:'rgba(83,74,183,0.15)',
+                borderColor:col,
+                borderWidth:2,
+                pointBackgroundColor:cats.map(function(c){return catcols[c.key];}),
+                pointRadius:4
+              }]
+            },
+            options:{
+              responsive:true,
+              scales:{r:{min:0,max:4,ticks:{stepSize:1,font:{size:9}},pointLabels:{font:{size:10}}}},
+              plugins:{legend:{display:false}}
+            }
+          });
+        },50);
+      })(showCall2,CALL_CATS,CAT_COLORS);
+    }
+  }
 
   // ── COACHING EVAL TAB ──
   if(activeTab==='coaching-eval'){
@@ -2929,6 +3171,180 @@ function mitarbeiterDeaktivieren(){
   renderMain();
 }
 
+
+
+// ── CALL BEWERTUNG MODAL ──
+var CALL_SCORE_DEF=[
+  {cat:'opener',   catLabel:'Einstieg (5%)',            items:[
+    {key:'intro',             label:'Gesprächseinstieg',       desc:'Agent startet freundlich und professionell'},
+    {key:'ziel',              label:'Ziel des Calls',           desc:'Agent stellt Bezug zur Bestellung her'},
+  ]},
+  {cat:'einwand',  catLabel:'Einwandsentkräftung (35%)', items:[
+    {key:'qualifizieren',     label:'Einwand qualifizieren',    desc:'Was steckt hinter dem Einwand?'},
+    {key:'solidarisierung',   label:'Solidarisierung',          desc:'Echtes Verständnis zeigen'},
+    {key:'umgang',            label:'Umgang mit Einwand',       desc:'Passende Reaktion, keine Standardargumentation'},
+    {key:'entkraeftung',      label:'Entkräftung',              desc:'Einwand nachvollziehbar entkräften'},
+    {key:'testabschluss',     label:'Testabschluss',            desc:'Aktiv prüfen ob Einwand gelöst'},
+    {key:'vertrauen',         label:'Vertrauen aufbauen',       desc:'Sicherheit geben, dass der Wechsel funktioniert'},
+  ]},
+  {cat:'loop',     catLabel:'Loop / Dranbleiben (10%)',  items:[
+    {key:'dranbleiben',       label:'Re-Opening',               desc:'Im Gespräch bleiben und weitere Einwände behandeln'},
+  ]},
+  {cat:'bedarf',   catLabel:'Bedarfserweiterung (15%)',  items:[
+    {key:'erweitern',         label:'Bedarf erweitern',         desc:'Nach Nutzung und Anwendung fragen'},
+    {key:'quantifizieren',    label:'Bedarf quantifizieren',    desc:'Nach Menge, Frequenz, Zeitraum fragen'},
+    {key:'potenzial',         label:'Potenzial erkennen',       desc:'Hinweise erkennen und nutzen'},
+  ]},
+  {cat:'abschluss',catLabel:'Abschluss / Mega Yes (20%)',items:[
+    {key:'abschlussversuch',  label:'Abschlussversuch',         desc:'Aktiv zur Entscheidung führen'},
+    {key:'angebotsqualitaet', label:'Angebotsqualität',         desc:'Angebot passt zum Bedarf'},
+    {key:'kaufsignale',       label:'Kaufsignale nutzen',       desc:'Kaufbereitschaft erkennen und nutzen'},
+  ]},
+  {cat:'gespraech',catLabel:'Gesprächsführung (10%)',    items:[
+    {key:'struktur',          label:'Struktur',                 desc:'Klarer Ablauf'},
+    {key:'kontrolle',         label:'Gesprächskontrolle',       desc:'Agent steuert aktiv'},
+    {key:'klarheit',          label:'Klarheit',                 desc:'Verständlich und einfach sprechen'},
+    {key:'fragequalitaet',    label:'Fragequalität',            desc:'Offene, zielgerichtete Fragen'},
+  ]},
+  {cat:'zusammenfassung',catLabel:'Zusammenfassung (5%)',items:[
+    {key:'naechsteschritte',  label:'Zusammenfassung & nächste Schritte',desc:'Bestellung, Kosten und Lieferung klar erklärt'},
+  ]},
+];
+
+var CAT_COL_MAP={opener:'#534AB7',einwand:'#C47A1E',loop:'#1D9E75',bedarf:'#0A6B55',abschluss:'#BA7517',gespraech:'#888780',zusammenfassung:'#2776d2'};
+var _callScores={};
+
+function openCallBewertung(empId){
+  if(empId)selectedEmp=empId;
+  _callScores={};
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+
+  var overlay=document.createElement('div');
+  overlay.id='callModal';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9000;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 0';
+
+  var w=document.createElement('div');
+  w.style.cssText='background:var(--bg);border-radius:var(--r-xl);width:min(720px,96vw);padding:24px;position:relative;margin:auto';
+
+  var scoreLabels=['','1 = schlecht','2 = schwach','3 = gut','4 = sehr gut'];
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
+    +'<div><div style="font-size:16px;font-weight:700"><i class="ti ti-phone-call" style="margin-right:8px;color:var(--purple)"></i>Call bewerten – '+emp.name+'</div>'
+    +'<div style="font-size:12px;color:var(--text2);margin-top:2px">Wertung 1–4 pro Kriterium</div></div>'
+    +'<button onclick="document.getElementById(\'callModal\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2)">✕</button>'
+    +'</div>';
+
+  // Meta fields
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;padding:14px;background:var(--bg2);border-radius:var(--r-lg)">';
+  h+='<div><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">DATUM</label>'
+    +'<input id="cbDatum" type="date" value="'+new Date().toISOString().slice(0,10)+'" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:13px"></div>';
+  h+='<div><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">AUFTRAGSNUMMER</label>'
+    +'<input id="cbAuftrag" type="text" placeholder="z.B. 438043417" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+  h+='<div><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">BEWERTET VON</label>'
+    +'<input id="cbBewerter" type="text" placeholder="Name" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+  h+='<div><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">ABSCHLUSS?</label>'
+    +'<select id="cbStatus" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:13px">'
+    +'<option value="nein">Nein</option><option value="ja">Ja</option></select></div>';
+  h+='<div><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">B2B / B2C</label>'
+    +'<select id="cbB2B" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:13px">'
+    +'<option value="B2C">B2C</option><option value="B2B">B2B</option></select></div>';
+  h+='<div><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">EINWAND</label>'
+    +'<input id="cbEinwand" type="text" placeholder="z.B. Preis, Kündigung" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:13px;box-sizing:border-box"></div>';
+  h+='</div>';
+
+  // Score categories
+  CALL_SCORE_DEF.forEach(function(cat){
+    var col=CAT_COL_MAP[cat.cat]||'#534AB7';
+    h+='<div style="margin-bottom:16px;background:var(--bg2);border-radius:var(--r-lg);overflow:hidden">';
+    h+='<div style="padding:8px 14px;border-top:3px solid '+col+';background:rgba(0,0,0,0.03)">';
+    h+='<span style="font-size:11px;font-weight:700;color:'+col+'">'+cat.catLabel.toUpperCase()+'</span></div>';
+    cat.items.forEach(function(item){
+      h+='<div style="padding:10px 14px;border-top:1px solid var(--border)">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">';
+      h+='<div><div style="font-size:13px;font-weight:600">'+item.label+'</div>';
+      h+='<div style="font-size:11px;color:var(--text2);margin-top:1px">'+item.desc+'</div></div>';
+      h+='<div id="cbs_'+item.key+'" style="font-size:20px;font-weight:700;color:var(--text3);min-width:28px;text-align:right">—</div></div>';
+      h+='<div style="display:flex;gap:6px">';
+      [1,2,3,4].forEach(function(v){
+        var vcol=v>=4?'var(--teal)':v>=3?'var(--purple)':v>=2?'var(--amber)':'var(--red)';
+        h+='<button id="cbb_'+item.key+'_'+v+'" onclick="setCallScore(\''+item.key+'\','+v+')" title="'+scoreLabels[v]+'" style="flex:1;padding:7px 4px;border:2px solid var(--border);border-radius:var(--r-md);background:var(--bg);cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);transition:all 0.15s">'
+          +'<span style="display:block;font-size:16px">'+v+'</span>'
+          +'<span style="font-size:9px;display:block;line-height:1.2;opacity:0.7">'+(v===1?'Schlecht':v===2?'Schwach':v===3?'Gut':'Sehr gut')+'</span>'
+          +'</button>';
+      });
+      h+='</div></div>';
+    });
+    h+='</div>';
+  });
+
+  // Hinweis
+  h+='<div style="margin-bottom:20px"><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">HINWEIS / NOTIZ</label>'
+    +'<textarea id="cbHinweis" rows="2" placeholder="Freitext – z.B. kurz, fragt nicht nach, vergeudetes Potenzial" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:13px;resize:vertical;font-family:inherit;box-sizing:border-box"></textarea></div>';
+
+  // Save button
+  h+='<div style="display:flex;gap:10px;justify-content:flex-end">'
+    +'<button onclick="document.getElementById(\'callModal\').remove()" class="btn">Abbrechen</button>'
+    +'<button onclick="saveCallBewertung()" class="btn btn-primary"><i class="ti ti-device-floppy"></i> Bewertung speichern</button>'
+    +'</div>';
+
+  w.innerHTML=h;
+  overlay.appendChild(w);
+  document.body.appendChild(overlay);
+}
+
+function setCallScore(key,val){
+  _callScores[key]=val;
+  // Update display value
+  var disp=document.getElementById('cbs_'+key);
+  if(disp){
+    var col=val>=4?'var(--teal)':val>=3?'var(--purple)':val>=2?'var(--amber)':'var(--red)';
+    disp.style.color=col;
+    disp.textContent=val;
+  }
+  // Update button styles
+  [1,2,3,4].forEach(function(v){
+    var btn=document.getElementById('cbb_'+key+'_'+v);
+    if(!btn)return;
+    if(v===val){
+      var bc=val>=4?'var(--teal)':val>=3?'var(--purple)':val>=2?'var(--amber)':'var(--red)';
+      btn.style.borderColor=bc;
+      btn.style.background=bc;
+      btn.style.color='#fff';
+    } else {
+      btn.style.borderColor='var(--border)';
+      btn.style.background='var(--bg)';
+      btn.style.color='var(--text2)';
+    }
+  });
+}
+
+function saveCallBewertung(){
+  var datum=document.getElementById('cbDatum').value;
+  var auftrag=document.getElementById('cbAuftrag').value.trim();
+  var bewerter=document.getElementById('cbBewerter').value.trim();
+  var status=document.getElementById('cbStatus').value;
+  var b2b=document.getElementById('cbB2B').value;
+  var einwand=document.getElementById('cbEinwand').value.trim();
+  var hinweis=document.getElementById('cbHinweis').value.trim();
+  if(!datum){alert('Bitte Datum eingeben');return;}
+  var entry={
+    id:Date.now(),
+    date:datum,
+    auftragsnr:auftrag,
+    bewertetVon:bewerter,
+    status:status,
+    b2b:b2b,
+    einwand:einwand,
+    hinweis:hinweis,
+    scores:Object.assign({},_callScores)
+  };
+  if(!callRatings[selectedEmp])callRatings[selectedEmp]=[];
+  callRatings[selectedEmp].unshift(entry);
+  lsSave();
+  document.getElementById('callModal').remove();
+  activeTab='call-performance';
+  renderTab();
+}
 
 function openSessionModal(empId){
   if(empId)selectedEmp=empId;
