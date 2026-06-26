@@ -2388,42 +2388,30 @@ function renderTab(){
       html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;text-align:center;color:var(--text3)">Noch keine Sessions vorhanden</div>';
     } else {
       html+='<div style="overflow-x:auto"><table style="table-layout:fixed;min-width:800px;width:100%;border-collapse:collapse;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">';
-      html+='<colgroup><col><col><col><col><col><col><col style="width:36px"></colgroup>';
+      html+='<colgroup><col style="width:140px"><col><col><col><col></colgroup>';
       html+='<thead><tr style="background:var(--bg2)">';
       html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border)">Datum</th>';
-      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Uhrzeit</th>';
-      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Art</th>';
       html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Inhalt</th>';
-      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Status</th>';
-      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Notiz</th>';
-      html+='<th style="border-bottom:1px solid var(--border);border-left:1px solid var(--border)"></th>';
+      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)"><span style="color:#2D7A4F">START</span></th>';
+      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)"><span style="color:#C0392B">STOP</span></th>';
+      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)"><span style="color:#B8860B">CONTINUE</span></th>';
       html+='</tr></thead><tbody>';
       sessions.forEach(function(s,i){
-        var tid='st'+emp.id+'x'+i;
         var topics=s.topics&&s.topics.length?s.topics.join(', '):(s.focus||'—');
         var stat=s.status||'abgeschlossen';
         var statCol=stat==='geplant'?'var(--purple)':stat==='abgeschlossen'?'var(--teal)':'var(--amber)';
-        var hasDetail=(s.start&&s.start.trim())||(s.stop&&s.stop.trim())||(s.cont&&s.cont.trim());
+        var tdStyle='padding:12px 12px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:top';
         html+='<tr style="'+(i===0?'background:var(--bg2);':'')+'">';
-        html+='<td style="padding:7px 12px;font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border)">'+fd(s.date)+(i===0?' ★':'')+'</td>';
-        html+='<td style="padding:7px 12px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+(s.uhrzeit||'—')+'</td>';
-        html+='<td style="padding:7px 12px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);border-left:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(s.type||'—')+'</td>';
-        html+='<td style="padding:7px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+topics+'</td>';
-        html+='<td style="padding:7px 12px;font-size:11px;font-weight:600;color:'+statCol+';border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+stat.charAt(0).toUpperCase()+stat.slice(1)+'</td>';
-        html+='<td style="padding:7px 12px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);border-left:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(s.notes||s.text||'—')+'</td>';
-        html+='<td style="text-align:center;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">';
-        if(hasDetail)html+='<button data-eid="'+tid+'" onclick="toggleSessCard(this.dataset.eid)" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:5px 8px"><span id="arr-'+tid+'">▾</span></button>';
-        html+='</td></tr>';
-        if(hasDetail){
-          html+='<tr id="body-'+tid+'" style="display:none;background:var(--bg2)"><td colspan="7" style="padding:0">';
-          [{key:'start',label:'START',col:'#2D7A4F'},{key:'stop',label:'STOP',col:'#C0392B'},{key:'cont',label:'CONTINUE',col:'#B8860B'}].forEach(function(f){
-            var val=s[f.key]||'';if(!val.trim())return;
-            html+='<div style="padding:8px 14px;border-top:1px solid var(--border);border-left:3px solid '+f.col+'">';
-            html+='<span style="font-size:10px;font-weight:700;color:'+f.col+'">'+f.label+'</span>';
-            html+='<span style="font-size:12px;color:var(--text);margin-left:10px">'+val+'</span></div>';
-          });
-          html+='</td></tr>';
-        }
+        html+='<td style="'+tdStyle+';white-space:nowrap">';
+        html+='<div style="font-weight:600">'+fd(s.date)+(i===0?' ★':'')+'</div>';
+        if(s.uhrzeit)html+='<div style="font-size:10px;color:var(--text3);margin-top:2px"><i class="ti ti-clock" style="font-size:10px"></i> '+s.uhrzeit+'</div>';
+        html+='<div style="font-size:10px;color:'+statCol+';margin-top:3px;font-weight:600">'+stat.charAt(0).toUpperCase()+stat.slice(1)+'</div>';
+        html+='</td>';
+        html+='<td style="'+tdStyle+';border-left:1px solid var(--border);color:var(--text2)">'+topics+'</td>';
+        html+='<td style="'+tdStyle+';border-left:1px solid var(--border);color:var(--text);white-space:pre-wrap">'+(s.start&&s.start.trim()?s.start:'<span style="color:var(--text3)">—</span>')+'</td>';
+        html+='<td style="'+tdStyle+';border-left:1px solid var(--border);color:var(--text);white-space:pre-wrap">'+(s.stop&&s.stop.trim()?s.stop:'<span style="color:var(--text3)">—</span>')+'</td>';
+        html+='<td style="'+tdStyle+';border-left:1px solid var(--border);color:var(--text);white-space:pre-wrap">'+(s.cont&&s.cont.trim()?s.cont:'<span style="color:var(--text3)">—</span>')+'</td>';
+        html+='</tr>';
       });
       html+='</tbody></table></div>';
     }
