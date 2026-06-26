@@ -637,6 +637,83 @@ tr:hover td{background:var(--bg2);}
   h+='</div>';
 
   ma.innerHTML=h;
+
+  // ── Team Performance Trend Chart.js ──
+  setTimeout(function(){
+    var canvas=document.getElementById('teamPerfChart');
+    if(!canvas)return;
+    if(window._teamChart){window._teamChart.destroy();window._teamChart=null;}
+    var mMap={
+      crOEM:{f:'crOEM',l:'CR OEM %',c:'#BA7517'},
+      crTeilweise:{f:'crTeilweise',l:'CR TW %',c:'#888780'},
+      crYes:{f:'crYes',l:'CR Yes %',c:'#639922'},
+      crSuperYes:{f:'crSuperYes',l:'CR SY %',c:'#534AB7'},
+      crMegaYes:{f:'crMegaYes',l:'CR MY %',c:'#1D9E75'},
+      aktivitaeten:{f:'aktivitaeten',l:'Aktivitäten',c:'#378ADD'},
+      convOEM:{f:'convOEM',l:'Conv. OEM',c:'#7C6FF7'},
+      margeGesamt:{f:'margeGesamt',l:'Marge €',c:'#0C447C'}
+    };
+    var m=mMap[teamPerfMetric]||mMap.crOEM;
+    var days=teamRange||7;
+    // Collect all dates in range from all employees
+    var cutDate=new Date();cutDate.setDate(cutDate.getDate()-days);
+    var cutStr=cutDate.toISOString().slice(0,10);
+    var dateSet={};
+    var activeList=employees.filter(function(e){return e.active!==false;});
+    activeList.forEach(function(e){
+      (performance[e.id]||[]).forEach(function(p){
+        if(p.date>=cutStr)dateSet[p.date]=true;
+      });
+    });
+    var dates=Object.keys(dateSet).sort();
+    if(!dates.length){return;}
+    // Average per day across all employees
+    var vals=dates.map(function(d){
+      var dayVals=[];
+      activeList.forEach(function(e){
+        var row=(performance[e.id]||[]).find(function(p){return p.date===d;});
+        if(row&&(row[m.f]||row[m.f]===0))dayVals.push(row[m.f]);
+      });
+      return dayVals.length?+(dayVals.reduce(function(a,b){return a+b;},0)/dayVals.length).toFixed(1):null;
+    });
+    var labels=dates.map(function(d){return fd(d);});
+    // Target from KPI_TARGETS (general settings)
+    var tMap={crOEM:'crOEM',crTeilweise:'crTeilweise',crYes:'crYes',crSuperYes:'crSuperYes',crMegaYes:'crMegaYes'};
+    var tk=tMap[teamPerfMetric];
+    var target=tk&&KPI_TARGETS[tk]?KPI_TARGETS[tk].val:null;
+    var yScales={
+      crOEM:{min:0,max:100,step:20},crTeilweise:{min:0,max:100,step:20},
+      crYes:{min:0,max:100,step:20},crSuperYes:{min:0,max:100,step:20},
+      crMegaYes:{min:0,max:100,step:20},aktivitaeten:{min:0,max:300,step:50},
+      convOEM:{min:0,max:50,step:10},margeGesamt:{min:0,max:5000,step:1000}
+    };
+    var yS=yScales[teamPerfMetric]||{min:0,max:100,step:20};
+    var datasets=[{
+      label:m.l,data:vals,borderColor:m.c,backgroundColor:m.c+'22',
+      fill:true,tension:0.35,pointRadius:days<=7?4:2,
+      pointBackgroundColor:m.c,borderWidth:2,order:1
+    }];
+    if(target!==null){
+      datasets.push({
+        label:'Ziel ('+target+')',
+        data:dates.map(function(){return target;}),
+        borderColor:'#E24B4A',borderDash:[4,3],borderWidth:1.5,
+        pointRadius:0,fill:false,order:2
+      });
+    }
+    window._teamChart=new Chart(canvas,{
+      type:'line',
+      data:{labels:labels,datasets:datasets},
+      options:{
+        responsive:true,
+        plugins:{legend:{display:target!==null,position:'top',labels:{font:{size:11},boxWidth:20,padding:12}}},
+        scales:{
+          x:{ticks:{font:{size:11},maxTicksLimit:10},grid:{display:false}},
+          y:{min:yS.min,max:yS.max,ticks:{font:{size:11},stepSize:yS.step},grid:{color:'rgba(0,0,0,0.05)'}}
+        }
+      }
+    });
+  },50);
 }
 
 // ══ LOCALSTORAGE ══
@@ -754,6 +831,7 @@ var CR_GOOD=KPI_TARGETS.crOEM.val;
 
 // ── STATE ──
 var teamRange=7;
+var teamPerfMetric='crOEM';
 var settings={srApiKey:'',srOrgId:'',ftpUrl:''};
 var view='team', selectedEmp=1, activeTab='performance';
 var teamFilter='ALL';
@@ -1029,6 +1107,7 @@ function renderSidebar(){
 }
 
 function setTeamRange(d){teamRange=d;renderTeam();}
+function setTeamMetric(m){teamPerfMetric=m;renderTeam();}
 function showView(v){view=v;renderSidebar();renderMain();}
 function renderMain(){if(view==='team')renderTeam();else if(view==='coaching')renderCoachingAnsicht();else if(view==='settings')renderEinstellungen();else renderEmpDetail();}
 
@@ -1429,6 +1508,31 @@ function renderTeam(){
       var syFarbe=syD!==null?(syOk?'var(--teal)':'var(--red)'):'var(--purple)';
       var myFarbe=myD!==null?(myOk?'var(--teal)':'var(--red)'):'var(--teal)';
       return '<div class="g5" style="margin-bottom:20px">'        +kpiKarte(oemCol,'TEAM CR OEM',oemVal,(days!==7?'7d: '+(tAvg7('crOEM')!==null?Math.round(tAvg7('crOEM'))+'%':'—')+' · ':'')+'Ziel ≥ '+CR_GOOD+'%',oemD,oemCol,CR_GOOD,dOEM)        +kpiKarte(syFarbe,'TEAM SY',syVal,(days!==7?'7d: '+(tAvg7('crSuperYes')!==null?Math.round(tAvg7('crSuperYes'))+'%':'—')+' · ':'')+'Ziel '+( KPI_TARGETS.crSuperYes.dir==='gte'?'≥':'≤')+syTarget+'%',syD!==null?Math.round(syD):null,syFarbe,syTarget,dSY)        +kpiKarte(myFarbe,'TEAM MY',myVal,(days!==7?'7d: '+(tAvg7('crMegaYes')!==null?Math.round(tAvg7('crMegaYes'))+'%':'—')+' · ':'')+'Ziel '+( KPI_TARGETS.crMegaYes.dir==='gte'?'≥':'≤')+myTarget+'%',myD!==null?Math.round(myD):null,myFarbe,myTarget,dMY)        +kpiKarte('var(--blue)','ZUSÄTZL. MARGE','€'+totalMargin.toLocaleString('de-DE'),(days!==7?'7d: €'+totalMargin7.toLocaleString('de-DE')+' · ':'')+days+'-Tage Gesamt',null,null,null,null)        +kpiKarte('var(--red)','OFFENE ALERTS',totalAlerts+'',totalAlerts>0?'unter Zielwert':'keine Alerts',null,null,null,null)        +'</div>';
+    })()
+    // Team Performance Trend Chart
+    +(function(){
+      var TMETRICS=[
+        {k:'crOEM',      l:'CR OEM',    c:'#BA7517'},
+        {k:'crTeilweise',l:'CR TW',     c:'#888780'},
+        {k:'crYes',      l:'CR Yes',    c:'#639922'},
+        {k:'crSuperYes', l:'CR SY',     c:'#534AB7'},
+        {k:'crMegaYes',  l:'CR MY',     c:'#1D9E75'},
+        {k:'aktivitaeten',l:'Aktivit.', c:'#378ADD'},
+        {k:'convOEM',    l:'Conv. OEM', c:'#7C6FF7'},
+        {k:'margeGesamt',l:'Marge',     c:'#0C447C'},
+      ];
+      var s='<div class="card" style="margin-bottom:16px">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+        +'<div class="card-title" style="margin:0">Team Performance Trend</div>'
+        +'<div style="display:flex;gap:8px">'
+        +'<div class="chart-toggle">';
+      TMETRICS.forEach(function(it){
+        s+='<button class="'+(teamPerfMetric===it.k?'active':'')+'" data-m="'+it.k+'" onclick="setTeamMetric(this.dataset.m)">'+it.l+'</button>';
+      });
+      s+='</div><div class="chart-toggle">';
+      [7,30,90].forEach(function(d){s+='<button class="'+(days===d?'active':'')+'" data-d="'+d+'" onclick="setTeamRange(parseInt(this.dataset.d))">'+d+'d</button>';});
+      s+='</div></div></div><canvas id="teamPerfChart" height="80"></canvas></div>';
+      return s;
     })()
     // Alert Banner
     +(totalAlerts>0?'<div class="alert alert-warn" style="margin-bottom:18px"><i class="ti ti-alert-triangle" style="font-size:18px;color:var(--amber);flex-shrink:0"></i><div><div style="font-size:13px;font-weight:600;color:var(--amber-dark)">'+totalAlerts+' Performance-Alert'+(totalAlerts!==1?'s':'')+' im Team</div><div style="font-size:12px;color:var(--amber-dark)">'+list.filter(function(e){return checkAlerts(e.id).length>0;}).map(function(e){return e.name;}).join(', ')+'</div></div></div>':'')
