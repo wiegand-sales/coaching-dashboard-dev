@@ -497,7 +497,7 @@ tr:hover td{background:var(--bg2);}
         :abg.filter(function(x){return x.d===ds;}).length;
       days.push({ds:ds,n:cnt,day:dt.getDate(),future:i>0,isH:i===0});
     }
-    var maxN=Math.max.apply(null,days.map(function(x){return x.n;}))||1;
+    var maxN=10;
     var nD=days.length;
     function xP(idx){return padL+Math.round(idx/(nD-1)*cW);}
     function yP(n){return padT+cH-Math.round(n/maxN*cH);}
