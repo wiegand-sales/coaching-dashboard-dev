@@ -330,18 +330,39 @@ tr:hover td{background:var(--bg2);}
   <div class="modal-title" style="display:flex;align-items:center;gap:8px"><i class="ti ti-calendar-plus" style="color:var(--purple)"></i> Session planen</div>
   <div class="f2" style="margin-bottom:10px">
     <div><label>Mitarbeiter</label><select id="sessionEmpSel"></select></div>
-    <div><label>Datum</label><input type="date" id="sessionDatum"></div>
+    <div class="f2" style="gap:8px">
+      <div><label>Datum</label><input type="date" id="sessionDatum"></div>
+      <div><label>Uhrzeit</label><input type="time" id="sessionUhrzeit" value="09:00"></div>
+    </div>
   </div>
   <div class="f2" style="margin-bottom:10px">
-    <div><label>Typ</label><select id="sessionTyp">
-      <option>Gesprächsbewertung</option>
-      <option>Onboarding-Session</option>
-      <option>Anlassbezogene Session</option>
-      <option>Mindset-Coaching</option>
-      <option>Einwandbehandlung Training</option>
-      <option>Abschlusstechnik Training</option>
+    <div><label>Art des Coachings</label><select id="sessionTyp">
+      <option>Call Shadowing Aktiv</option>
+      <option>Call Shadowing Passiv</option>
+      <option>1:1 Coaching</option>
+      <option>Calls Review</option>
+      <option>Gruppencoaching</option>
+      <option>Quiz</option>
+      <option>SolidRoad</option>
+      <option>Bemerkung</option>
+      <option>Sonstiges</option>
     </select></div>
-    <div><label>Fokusthema</label><input type="text" id="sessionThema" placeholder="z.B. Einwandbehandlung, Loop-Technik..."></div>
+    <div><label>Inhalt des Coachings</label><select id="sessionThema">
+      <option value="">— Bitte wählen —</option>
+      <option>Einwandsbehandlung</option>
+      <option>Bedarfsanalyse</option>
+      <option>Produktwissen</option>
+      <option>Gesprächsführung</option>
+      <option>Motivation</option>
+      <option>Coachability</option>
+      <option>Zuverlässigkeit</option>
+      <option>Teamfähigkeit</option>
+      <option>CR OEM</option>
+      <option>TW</option>
+      <option>SY</option>
+      <option>MY</option>
+      <option>Sonstiges</option>
+    </select></div>
   </div>
   <div style="margin-bottom:14px"><label>Anlass / Notiz für den Coach</label><textarea id="sessionNotiz" placeholder="Warum wird diese Session eingeplant? Was soll der Coach beachten..."></textarea></div>
   <div class="modal-actions">
@@ -439,7 +460,7 @@ tr:hover td{background:var(--bg2);}
   var all=[];
   liste.forEach(function(emp){
     (protocols[emp.id]||[]).forEach(function(p){
-      all.push({eid:emp.id,en:emp.name,d:p.date,r:p.rating,f:p.focus||'',s:p.status||'abgeschlossen',t:p.typ||''});
+      all.push({eid:emp.id,en:emp.name,d:p.date,r:p.rating,f:p.focus||'',s:p.status||'abgeschlossen',t:p.type||p.typ||'',sid:p.id,uhrzeit:p.uhrzeit||''});
     });
   });
   all.sort(function(a,b){return b.d.localeCompare(a.d);});
@@ -581,10 +602,13 @@ tr:hover td{background:var(--bg2);}
     h+='<div style="display:flex;flex-direction:column;gap:8px;flex:1">';
     gep.forEach(function(x){
       var c=ec(x.eid),dt2=new Date(x.d+'T00:00:00'),df=Math.round((dt2-hD)/86400000);
-      h+='<div style="background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--purple);border-radius:var(--r-lg);padding:11px 14px;display:flex;align-items:center;gap:12px">';
+      var pTyp=(x.typ||x.t||'').replace(/[<>"']/g,'');
+      var pFok=(x.f||'').replace(/[<>"']/g,'');
+      var pUhr=(x.uhrzeit||'').replace(/[<>"']/g,'');
+      h+='<div style="background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--purple);border-radius:var(--r-lg);padding:11px 14px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openPlannedSession('+x.eid+',\''+x.sid+'\',\''+pTyp+'\',\''+pFok+'\',\''+x.d+'\',\''+pUhr+'\')">';
       h+='<div style="min-width:46px;text-align:center;background:var(--purple-bg);border-radius:var(--r-md);padding:6px 8px;flex-shrink:0"><div style="font-size:10px;font-weight:600;color:var(--purple)">'+wday(x.d)+'</div><div style="font-size:21px;font-weight:700;color:var(--purple);line-height:1.1">'+dt2.getDate()+'</div></div>';
-      h+='<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><div class="av" style="width:24px;height:24px;font-size:9px;background:'+c.bg+';color:'+c.text+';flex-shrink:0">'+ini(x.en)+'</div><span style="font-weight:600;font-size:13px;white-space:nowrap">'+x.en+'</span><span style="font-size:10px;padding:1px 6px;border-radius:20px;background:'+(df<=1?'var(--amber-bg)':'var(--bg2)')+';color:'+(df<=1?'var(--amber-dark)':'var(--text2)')+'">'+tdiff(x.d)+'</span></div><div style="font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(x.t||'Coaching')+(x.f?' · '+x.f:'')+'</div></div>';
-      h+='<button class="btn btn-sm" data-id="'+x.eid+'" data-d="'+x.d+'" data-f="'+x.f.replace(/[<>"]/g,'')+'" onclick="emailSession(parseInt(this.dataset.id),this.dataset.d,this.dataset.f)" title="Termin-E-Mail" style="padding:6px 9px;flex-shrink:0"><i class="ti ti-mail"></i></button>';
+      h+='<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><div class="av" style="width:24px;height:24px;font-size:9px;background:'+c.bg+';color:'+c.text+';flex-shrink:0">'+ini(x.en)+'</div><span style="font-weight:600;font-size:13px;white-space:nowrap">'+x.en+'</span>'+(pUhr?'<span style="font-size:10px;color:var(--text2)"><i class="ti ti-clock" style="font-size:10px"></i> '+pUhr+'</span>':'')+' <span style="font-size:10px;padding:1px 6px;border-radius:20px;background:'+(df<=1?'var(--amber-bg)':'var(--bg2)')+';color:'+(df<=1?'var(--amber-dark)':'var(--text2)')+'">'+tdiff(x.d)+'</span></div><div style="font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(pTyp||'Coaching')+(pFok?' · '+pFok:'')+'</div></div>';
+      h+='<button class="btn btn-sm" data-id="'+x.eid+'" data-d="'+x.d+'" data-f="'+pFok+'" onclick="event.stopPropagation();emailSession(parseInt(this.dataset.id),this.dataset.d,this.dataset.f)" title="Termin-E-Mail" style="padding:6px 9px;flex-shrink:0"><i class="ti ti-mail"></i></button>';
       h+='</div>';
     });
     h+='</div>';
@@ -3154,28 +3178,55 @@ function saveSRKey(){
   closeModal('srModal');renderSettings();
 }
 
+
+function openPlannedSession(empId, sessionId, typ, fokus, datum, uhrzeit){
+  selectedEmp=empId;
+  activeTab='session';
+  renderEmpDetail();
+  // Pre-fill form after render
+  setTimeout(function(){
+    var dateEl=document.getElementById('sess-date');
+    var typeEl=document.getElementById('sess-type');
+    var topicEl=document.getElementById('sess-topic-sel');
+    if(dateEl&&datum) dateEl.value=datum;
+    if(typeEl&&typ){
+      for(var i=0;i<typeEl.options.length;i++){
+        if(typeEl.options[i].value===typ||typeEl.options[i].text===typ){typeEl.selectedIndex=i;break;}
+      }
+    }
+    if(topicEl&&fokus){
+      for(var j=0;j<topicEl.options.length;j++){
+        if(topicEl.options[j].value===fokus||topicEl.options[j].text===fokus){topicEl.selectedIndex=j;break;}
+      }
+    }
+    // Scroll to form
+    var formEl=document.getElementById('sess-date');
+    if(formEl) formEl.scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
+}
+
 function sessionSpeichernNeu(){
   var empId=parseInt(document.getElementById('sessionEmpSel').value);
   var datum=document.getElementById('sessionDatum').value;
+  var uhrzeit=document.getElementById('sessionUhrzeit').value||'';
   var typ=document.getElementById('sessionTyp').value;
-  var thema=document.getElementById('sessionThema').value.trim();
+  var thema=document.getElementById('sessionThema').value||'';
   var notiz=document.getElementById('sessionNotiz').value.trim();
   if(!empId||!datum)return alert('Bitte Mitarbeiter und Datum auswählen.');
-  // Add as a planned protocol entry
   if(!protocols[empId])protocols[empId]=[];
   protocols[empId].unshift({
-    id:Date.now(),date:datum,rating:null,
-    note:notiz||'',focus:thema||typ,
-    status:'geplant',skills:{},criteria:{},
-    typ:typ
+    id:Date.now(),date:datum,uhrzeit:uhrzeit,rating:null,
+    note:notiz||'',focus:thema,type:typ,
+    status:'geplant',skills:{},criteria:{}
   });
   document.getElementById('sessionThema').value='';
   document.getElementById('sessionNotiz').value='';
   document.getElementById('sessionDatum').value='';
+  document.getElementById('sessionUhrzeit').value='09:00';
   closeModal('sessionPlanenModal');
+  lsSave();
   renderSidebar();
   renderMain();
-  alert('Session geplant für '+datum+'.');
 }
 
 
