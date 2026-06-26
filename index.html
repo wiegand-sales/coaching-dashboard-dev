@@ -1870,32 +1870,39 @@ function renderTab(){
     if(!callRat.length){
       html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;text-align:center;color:var(--text3)">Noch keine Bewertungen vorhanden</div>';
     } else {
+      var COL_W='width:52px';
       html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">';
+      html+='<colgroup>';
+      html+='<col style="width:130px"><col style="width:110px"><col style="width:54px"><col style="width:54px">';
+      CALL_CATS.forEach(function(){html+='<col style="'+COL_W+'">';});
+      html+='<col style="width:54px"><col><col style="width:100px">';
+      html+='</colgroup>';
       html+='<thead><tr style="background:var(--bg2)">';
       html+='<th style="text-align:left;padding:8px 10px;font-size:11px;border-bottom:1px solid var(--border)">Datum</th>';
       html+='<th style="text-align:left;padding:8px 10px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Auftrag</th>';
-      html+='<th style="text-align:center;padding:8px 6px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Status</th>';
-      html+='<th style="text-align:center;padding:8px 6px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">B2B/C</th>';
+      html+='<th style="text-align:center;padding:8px 4px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Status</th>';
+      html+='<th style="text-align:center;padding:8px 4px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">B2B/C</th>';
       CALL_CATS.forEach(function(cat){
-        html+='<th title="'+cat.label+'" style="text-align:center;padding:5px 4px;font-size:9px;font-weight:700;color:'+cat.col+';background:'+cat.fill+';border-bottom:1px solid var(--border);border-left:1px solid var(--border);white-space:nowrap">'+cat.short+'</th>';
+        html+='<th title="'+cat.label+'" style="text-align:center;padding:6px 4px;font-size:11px;font-weight:700;color:'+cat.col+';background:'+cat.fill+';border-bottom:1px solid var(--border);border-left:1px solid var(--border);white-space:nowrap">'+cat.short+'</th>';
       });
-      html+='<th style="text-align:center;padding:8px 6px;font-size:11px;font-weight:700;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Score</th>';
+      html+='<th style="text-align:center;padding:8px 4px;font-size:11px;font-weight:700;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Score</th>';
       html+='<th style="text-align:left;padding:8px 10px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Einwand</th>';
       html+='<th style="text-align:left;padding:8px 10px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Bewertet von</th>';
       html+='</tr></thead><tbody>';
       callRat.forEach(function(r,i){
         var ts=totalScore(r);var tcol=ts>=75?'var(--teal)':ts>=50?'var(--amber)':'var(--red)';
-        html+='<tr style="'+(i===0?'background:var(--bg2);font-weight:600;':'')+'">';
+        var rowStyle=i===0?'background:var(--bg2);':'';
+        html+='<tr style="'+rowStyle+'">';
         html+='<td style="padding:7px 10px;font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border)">'+fd(r.date)+(i===0?' ★':'')+'</td>';
         html+='<td style="padding:7px 10px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+(r.auftragsnr||'—')+'</td>';
-        html+='<td style="text-align:center;padding:7px 6px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+(r.status==='ja'?'<span style="color:var(--teal);font-weight:700">✓</span>':'<span style="color:var(--red)">✗</span>')+'</td>';
-        html+='<td style="text-align:center;padding:7px 6px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+(r.b2b||'—')+'</td>';
+        html+='<td style="text-align:center;padding:7px 4px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+(r.status==='ja'?'<span style="color:var(--teal);font-weight:700">✓</span>':'<span style="color:var(--red)">✗</span>')+'</td>';
+        html+='<td style="text-align:center;padding:7px 4px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+(r.b2b||'—')+'</td>';
         CALL_CATS.forEach(function(cat){
           var v=catAvg(r,cat);
           var bc=v>=3.5?'var(--teal)':v>=2.5?'var(--purple)':v>=1.5?'var(--amber)':v>0?'var(--red)':'var(--text3)';
-          html+='<td style="text-align:center;padding:7px 4px;font-size:12px;font-weight:600;color:'+bc+';border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+(v>0?v.toFixed(1):'—')+'</td>';
+          html+='<td style="text-align:center;padding:7px 4px;font-size:11px;font-weight:600;color:'+bc+';border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+(v>0?v.toFixed(1):'—')+'</td>';
         });
-        html+='<td style="text-align:center;padding:7px 6px;font-size:13px;font-weight:700;color:'+tcol+';border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+ts.toFixed(0)+'</td>';
+        html+='<td style="text-align:center;padding:7px 4px;font-size:11px;font-weight:700;color:'+tcol+';border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+ts.toFixed(0)+'</td>';
         html+='<td style="padding:7px 10px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+(r.einwand||'—')+'</td>';
         html+='<td style="padding:7px 10px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);border-left:1px solid var(--border)">'+(r.bewertetVon||'—')+'</td>';
         html+='</tr>';
