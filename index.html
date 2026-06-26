@@ -2148,43 +2148,37 @@ function renderTab(){
       })(showEval,DIMS,CCAT);
     }
 
-    // ── Coaching-Historie (Sessions) ──
-    html+='<div class="sec-title" style="margin-top:24px;margin-bottom:10px">Coaching-Historie</div>';
+    // ── Session-Historie (wie Session Tab) ──
     var chSessions=(protocols[emp.id]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+    html+='<div class="sec-title" style="margin-top:24px;margin-bottom:10px">Session-Historie <span style="font-size:12px;font-weight:400;color:var(--text3)">('+chSessions.length+')</span></div>';
     if(!chSessions.length){
       html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;text-align:center;color:var(--text3)"><i class="ti ti-calendar-off" style="font-size:24px;display:block;margin-bottom:6px"></i>Noch keine Sessions vorhanden</div>';
     } else {
       html+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">';
-      html+='<colgroup><col style="width:130px"><col style="width:70px"><col style="width:150px"><col style="width:180px"><col><col style="width:44px"></colgroup>';
+      html+='<colgroup><col style="width:140px"><col><col><col><col></colgroup>';
       html+='<thead><tr style="background:var(--bg2)">';
       html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border)">Datum</th>';
-      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Uhrzeit</th>';
-      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Art</th>';
       html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Inhalt</th>';
-      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)">Notiz</th>';
-      html+='<th style="border-bottom:1px solid var(--border);border-left:1px solid var(--border)"></th>';
+      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)"><span style="color:#2D7A4F">START</span></th>';
+      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)"><span style="color:#C0392B">STOP</span></th>';
+      html+='<th style="text-align:left;padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border);border-left:1px solid var(--border)"><span style="color:#B8860B">CONTINUE</span></th>';
       html+='</tr></thead><tbody>';
-      chSessions.forEach(function(s,idx){
-        var eid='ch'+emp.id+'x'+idx;
-        var hasDetail=(s.start&&s.start.trim())||(s.stop&&s.stop.trim())||(s.cont&&s.cont.trim());
+      chSessions.forEach(function(s,i){
         var topics=s.topics&&s.topics.length?s.topics.join(', '):(s.focus||'—');
-        html+='<tr style="border-bottom:1px solid var(--border)">';
-        html+='<td style="padding:8px 12px;font-size:12px;white-space:nowrap">'+fd(s.date)+'</td>';
-        html+='<td style="padding:8px 12px;font-size:12px;color:var(--text2);border-left:1px solid var(--border)">'+(s.uhrzeit||'—')+'</td>';
-        html+='<td style="padding:8px 12px;font-size:12px;color:var(--text2);border-left:1px solid var(--border)">'+(s.type||'Session')+'</td>';
-        html+='<td style="padding:8px 12px;font-size:12px;border-left:1px solid var(--border)">'+topics+'</td>';
-        html+='<td style="padding:8px 12px;font-size:12px;color:var(--text2);border-left:1px solid var(--border);word-break:break-word">'+(s.notes||s.text||'—')+'</td>';
-        html+='<td style="text-align:center;border-left:1px solid var(--border)">';
-        if(hasDetail){html+='<button data-eid="'+eid+'" onclick="toggleSessCard(this.dataset.eid)" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:6px 10px"><span id="arr-'+eid+'">▾</span></button>';}
-        html+='</td></tr>';
-        if(hasDetail){
-          html+='<tr id="body-'+eid+'" style="display:none;background:var(--bg2)"><td colspan="5" style="padding:0">';
-          [{key:'start',label:'START',col:'#2D7A4F'},{key:'stop',label:'STOP',col:'#C0392B'},{key:'cont',label:'CONTINUE',col:'#B8860B'}].forEach(function(f){
-            var val=s[f.key]||'';if(!val.trim())return;
-            html+='<div style="padding:8px 14px;border-top:1px solid var(--border);border-left:3px solid '+f.col+'"><span style="font-size:10px;font-weight:700;color:'+f.col+'">'+f.label+'</span><span style="font-size:12px;color:var(--text);margin-left:10px">'+val+'</span></div>';
-          });
-          html+='</td></tr>';
-        }
+        var stat=s.status||'abgeschlossen';
+        var statCol=stat==='geplant'?'var(--purple)':stat==='abgeschlossen'?'var(--teal)':'var(--amber)';
+        var tdStyle='padding:12px 12px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:top';
+        html+='<tr style="'+(i===0?'background:var(--bg2);':'')+'">';
+        html+='<td style="'+tdStyle+';white-space:nowrap">';
+        html+='<div style="font-weight:600">'+fd(s.date)+'</div>';
+        if(s.uhrzeit)html+='<div style="font-size:10px;color:var(--text3);margin-top:2px"><i class="ti ti-clock" style="font-size:10px"></i> '+s.uhrzeit+'</div>';
+        html+='<div style="font-size:10px;color:'+statCol+';margin-top:3px;font-weight:600">'+stat.charAt(0).toUpperCase()+stat.slice(1)+'</div>';
+        html+='</td>';
+        html+='<td style="'+tdStyle+';border-left:1px solid var(--border);color:var(--text2)">'+topics+'</td>';
+        html+='<td style="'+tdStyle+';border-left:1px solid var(--border);color:var(--text);white-space:pre-wrap">'+(s.start&&s.start.trim()?s.start:'<span style="color:var(--text3)">—</span>')+'</td>';
+        html+='<td style="'+tdStyle+';border-left:1px solid var(--border);color:var(--text);white-space:pre-wrap">'+(s.stop&&s.stop.trim()?s.stop:'<span style="color:var(--text3)">—</span>')+'</td>';
+        html+='<td style="'+tdStyle+';border-left:1px solid var(--border);color:var(--text);white-space:pre-wrap">'+(s.cont&&s.cont.trim()?s.cont:'<span style="color:var(--text3)">—</span>')+'</td>';
+        html+='</tr>';
       });
       html+='</tbody></table></div>';
     }
