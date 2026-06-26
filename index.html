@@ -639,82 +639,6 @@ tr:hover td{background:var(--bg2);}
 
   ma.innerHTML=h;
 
-  // ── Team Performance Trend Chart.js ──
-  window._teamChartData=null; // reset
-  (function(allRows,metric,days,kpiTargets){
-    var mMap={
-      crOEM:      {f:'crOEM',      l:'CR OEM %', c:'#BA7517'},
-      crTeilweise:{f:'crTeilweise',l:'CR TW %',  c:'#888780'},
-      crYes:      {f:'crYes',      l:'CR Yes %', c:'#639922'},
-      crSuperYes: {f:'crSuperYes', l:'CR SY %',  c:'#534AB7'},
-      crMegaYes:  {f:'crMegaYes',  l:'CR MY %',  c:'#1D9E75'},
-      aktivitaeten:{f:'aktivitaeten',l:'Aktivitäten',c:'#378ADD'},
-      convOEM:    {f:'convOEM',    l:'Conv. OEM',c:'#7C6FF7'},
-      margeGesamt:{f:'margeGesamt',l:'Marge €',  c:'#0C447C'}
-    };
-    var m=mMap[metric]||mMap.crOEM;
-    if(!allRows||!allRows.length){return;}
-    // Group by date
-    var byDate={};
-    allRows.forEach(function(row){
-      if(!byDate[row.date])byDate[row.date]=[];
-      var v=row[m.f];
-      if(v!==undefined&&v!==null)byDate[row.date].push(v);
-    });
-    var dates=Object.keys(byDate).sort();
-    if(!dates.length){return;}
-    var vals=dates.map(function(d){
-      var arr=byDate[d];
-      if(!arr.length)return null;
-      return +(arr.reduce(function(a,b){return a+b;},0)/arr.length).toFixed(1);
-    });
-    var labels=dates.map(function(d){return fd(d);});
-    var tKeys={crOEM:'crOEM',crTeilweise:'crTeilweise',crYes:'crYes',crSuperYes:'crSuperYes',crMegaYes:'crMegaYes'};
-    var tk=tKeys[metric];
-    var target=tk&&kpiTargets[tk]?kpiTargets[tk].val:null;
-    var yScales={
-      crOEM:{min:0,max:100,step:20},crTeilweise:{min:0,max:100,step:20},
-      crYes:{min:0,max:100,step:20},crSuperYes:{min:0,max:100,step:20},
-      crMegaYes:{min:0,max:100,step:20},aktivitaeten:{min:0,max:300,step:50},
-      convOEM:{min:0,max:50,step:10},margeGesamt:{min:0,max:5000,step:1000}
-    };
-    var yS=yScales[metric]||{min:0,max:100,step:20};
-    var datasets=[{
-      label:m.l,data:vals,borderColor:m.c,backgroundColor:m.c+'22',
-      fill:true,tension:0.35,pointRadius:dates.length<=10?4:2,
-      pointBackgroundColor:m.c,borderWidth:2,order:1
-    }];
-    if(target!==null){
-      datasets.push({
-        label:'Ziel ('+target+')',
-        data:dates.map(function(){return target;}),
-        borderColor:'#E24B4A',borderDash:[5,4],borderWidth:2,
-        pointRadius:0,fill:false,order:2
-      });
-    }
-    window._teamChartData={labels:labels,datasets:datasets,yS:yS};
-  })(allP, teamPerfMetric, teamRange||7, KPI_TARGETS);
-
-  setTimeout(function(){
-    if(!window._teamChartData)return;
-    var d=window._teamChartData;
-    var canvas=document.getElementById('teamPerfChart');
-    if(!canvas)return;
-    if(canvas._ci){try{canvas._ci.destroy();}catch(e){}}
-    canvas._ci=new Chart(canvas,{
-      type:'line',
-      data:{labels:d.labels,datasets:d.datasets},
-      options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:20,padding:12}}},
-        scales:{
-          x:{ticks:{font:{size:11},maxTicksLimit:12},grid:{display:false}},
-          y:{min:d.yS.min,max:d.yS.max,ticks:{font:{size:11},stepSize:d.yS.step},grid:{color:'rgba(0,0,0,0.05)'}}
-        }
-      }
-    });
-  },150);
 }
 
 // ══ LOCALSTORAGE ══
@@ -1579,6 +1503,81 @@ function renderTeam(){
     +'<th>Aktion</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
     +'</div>';
+  // ── Team Performance Trend Chart.js ──
+  window._teamChartData=null;
+  (function(allRows,metric,days,kpiTargets){
+    var mMap={
+      crOEM:      {f:'crOEM',      l:'CR OEM %', c:'#BA7517'},
+      crTeilweise:{f:'crTeilweise',l:'CR TW %',  c:'#888780'},
+      crYes:      {f:'crYes',      l:'CR Yes %', c:'#639922'},
+      crSuperYes: {f:'crSuperYes', l:'CR SY %',  c:'#534AB7'},
+      crMegaYes:  {f:'crMegaYes',  l:'CR MY %',  c:'#1D9E75'},
+      aktivitaeten:{f:'aktivitaeten',l:'Aktivitäten',c:'#378ADD'},
+      convOEM:    {f:'convOEM',    l:'Conv. OEM',c:'#7C6FF7'},
+      margeGesamt:{f:'margeGesamt',l:'Marge €',  c:'#0C447C'}
+    };
+    var m=mMap[metric]||mMap.crOEM;
+    if(!allRows||!allRows.length){return;}
+    var byDate={};
+    allRows.forEach(function(row){
+      if(!byDate[row.date])byDate[row.date]=[];
+      var v=row[m.f];
+      if(v!==undefined&&v!==null)byDate[row.date].push(v);
+    });
+    var dates=Object.keys(byDate).sort();
+    if(!dates.length){return;}
+    var vals=dates.map(function(d){
+      var arr=byDate[d];
+      if(!arr.length)return null;
+      return +(arr.reduce(function(a,b){return a+b;},0)/arr.length).toFixed(1);
+    });
+    var labels=dates.map(function(d){return fd(d);});
+    var tKeys={crOEM:'crOEM',crTeilweise:'crTeilweise',crYes:'crYes',crSuperYes:'crSuperYes',crMegaYes:'crMegaYes'};
+    var tk=tKeys[metric];
+    var target=tk&&kpiTargets[tk]?kpiTargets[tk].val:null;
+    var yScales={
+      crOEM:{min:0,max:100,step:20},crTeilweise:{min:0,max:100,step:20},
+      crYes:{min:0,max:100,step:20},crSuperYes:{min:0,max:100,step:20},
+      crMegaYes:{min:0,max:100,step:20},aktivitaeten:{min:0,max:300,step:50},
+      convOEM:{min:0,max:50,step:10},margeGesamt:{min:0,max:5000,step:1000}
+    };
+    var yS=yScales[metric]||{min:0,max:100,step:20};
+    var datasets=[{
+      label:m.l,data:vals,borderColor:m.c,backgroundColor:m.c+'22',
+      fill:true,tension:0.35,pointRadius:dates.length<=10?4:2,
+      pointBackgroundColor:m.c,borderWidth:2,order:1
+    }];
+    if(target!==null){
+      datasets.push({
+        label:'Ziel ('+target+')',
+        data:dates.map(function(){return target;}),
+        borderColor:'#E24B4A',borderDash:[5,4],borderWidth:2,
+        pointRadius:0,fill:false,order:2
+      });
+    }
+    window._teamChartData={labels:labels,datasets:datasets,yS:yS};
+  })(allP, teamPerfMetric, teamRange||7, KPI_TARGETS);
+
+  setTimeout(function(){
+    if(!window._teamChartData)return;
+    var d=window._teamChartData;
+    var canvas=document.getElementById('teamPerfChart');
+    if(!canvas)return;
+    if(canvas._ci){try{canvas._ci.destroy();}catch(e){}}
+    canvas._ci=new Chart(canvas,{
+      type:'line',
+      data:{labels:d.labels,datasets:d.datasets},
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:20,padding:12}}},
+        scales:{
+          x:{ticks:{font:{size:11},maxTicksLimit:12},grid:{display:false}},
+          y:{min:d.yS.min,max:d.yS.max,ticks:{font:{size:11},stepSize:d.yS.step},grid:{color:'rgba(0,0,0,0.05)'}}
+        }
+      }
+    });
+  },150);
 }
 
 function selectEmp(id){selectedEmp=id;view='emp';activeTab='performance';renderSidebar();renderMain();}
