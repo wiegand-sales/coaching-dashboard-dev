@@ -1787,9 +1787,13 @@ function renderTab(){
     // ── Formular + Historie (wie Session: 2-Spalten) ──
     html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px">';
 
-    // ─ Links: Formular ─
+    // ─ Links: Formular (eingeklappt) ─
     html+='<div id="callFormSection">';
-    html+='<div class="sec-title" style="margin-bottom:14px">Neuen Call bewerten</div>';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
+    html+='<div class="sec-title" style="margin:0">Neuen Call bewerten</div>';
+    html+='<button id="cbToggleBtn" onclick="toggleCallForm()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:var(--purple);color:#fff;border:none;border-radius:var(--r-md);cursor:pointer;font-size:12px;font-weight:600"><i class="ti ti-plus"></i> Call bewerten</button>';
+    html+='</div>';
+    html+='<div id="cbFormBody" style="display:none">';
     html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;display:flex;flex-direction:column;gap:14px">';
     html+='<div><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px">Datum</label>';
     html+='<input type="date" id="cb-date" value="'+today()+'" style="width:100%;box-sizing:border-box;padding:7px 10px;font-size:13px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text)"></div>';
@@ -1825,7 +1829,11 @@ function renderTab(){
     });
     html+='<div><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px">Hinweis / Notiz</label>';
     html+='<textarea id="cb-hinweis" rows="2" placeholder="Beobachtungen, Verbesserungspotenzial" style="width:100%;box-sizing:border-box;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);resize:vertical;font-family:inherit"></textarea></div>';
-    html+='<button class="btn btn-primary" style="width:100%" data-eid="'+emp.id+'" onclick="saveInlineCallBewertung(parseInt(this.dataset.eid))"><i class="ti ti-device-floppy"></i> Bewertung speichern</button>';
+    html+='<div style="display:flex;gap:8px">';
+    html+='<button class="btn" onclick="toggleCallForm()">Abbrechen</button>';
+    html+='<button class="btn btn-primary" style="flex:1" data-eid="'+emp.id+'" onclick="saveInlineCallBewertung(parseInt(this.dataset.eid))"><i class="ti ti-device-floppy"></i> Bewertung speichern</button>';
+    html+='</div>';
+    html+='</div>'; // end cbFormBody
     html+='</div></div>';
 
     // ─ Rechts: Klappcards-Historie ─
@@ -3219,6 +3227,26 @@ function mitarbeiterDeaktivieren(){
 
 // ── CALL BEWERTUNG INLINE ──
 var _cbScores={};
+
+
+function toggleCallForm(){
+  var body=document.getElementById('cbFormBody');
+  var btn=document.getElementById('cbToggleBtn');
+  if(!body)return;
+  var open=body.style.display==='none';
+  body.style.display=open?'block':'none';
+  if(btn){
+    btn.innerHTML=open?'<i class="ti ti-x"></i> Schließen':'<i class="ti ti-plus"></i> Call bewerten';
+    btn.style.background=open?'var(--text2)':'var(--purple)';
+  }
+}
+
+function switchToCallForm(){
+  var body=document.getElementById('cbFormBody');
+  if(body&&body.style.display==='none') toggleCallForm();
+  var el=document.getElementById('callFormSection');
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
 function setCbScore(key,val){
   _cbScores[key]=val;
