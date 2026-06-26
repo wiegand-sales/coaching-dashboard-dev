@@ -636,60 +636,6 @@ tr:hover td{background:var(--bg2);}
   h+='</div>';
   h+='</div>';
 
-  // ══ ZEILE 4: Team-Status als Tabelle ══
-  h+='<div><div class="sec-title" style="margin-bottom:10px">Team-Status</div>'+
-    '<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">'+
-    '<table><thead><tr>'+
-    '<th style="min-width:180px">Mitarbeiter</th>'+
-    '<th style="text-align:center">Sessions</th>'+
-    '<th>Letzte Session</th>'+
-    '<th>Nächste Session</th>'+
-    '<th>Letzte Bew.</th>'+
-    '<th>Ø Skill</th>'+
-    '<th>KPI-Alerts</th>'+
-    '<th>Aktion</th>'+
-    '</tr></thead><tbody>';
-  liste.forEach(function(emp){
-    var c=ec(emp.id),tage=tageSeitLetzterSession(emp.id),na=naechsteGeplanteSession(emp.id);
-    var al=checkAlerts(emp.id),lb=lastRating(emp.id),lr=lb?RS[lb]:null,af=aufmerksamkeitFarbe(tage);
-    var empSess=abg.filter(function(x){return x.eid===emp.id;}).length;
-    var skill=avgSkill(emp.id);
-    var skillCol=skill!==null?(skill>=80?'var(--teal)':skill>=60?'var(--purple)':'var(--amber)'):'var(--text3)';
-    h+='<tr style="cursor:pointer" onclick="selectEmp('+emp.id+')">';
-    // Mitarbeiter
-    h+='<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+
-      '<div style="display:flex;align-items:center;gap:9px">'+
-      '<div class="av" style="width:30px;height:30px;font-size:11px;background:'+c.bg+';color:'+c.text+'">'+ini(emp.name)+'</div>'+
-      '<div><div style="font-weight:500">'+emp.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:11px;color:var(--amber);margin-left:4px"></i>':'')+'</div>'+
-      '<div style="font-size:11px;color:var(--text2)">'+emp.phase+'</div></div></div></td>';
-    // Sessions
-    h+='<td style="padding:10px 14px;border-bottom:1px solid var(--border);text-align:center;font-size:16px;font-weight:700;color:var(--purple)">'+empSess+'</td>';
-    // Letzte Session
-    h+='<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:'+af+'">'+(tage===null?'Noch keine':tage===0?'Heute':tage+'d')+'</td>';
-    // Nächste Session
-    h+='<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+
-      (na?'<span style="font-size:12px;font-weight:600;color:var(--purple)"><i class="ti ti-calendar-event" style="margin-right:3px;font-size:11px"></i>'+fd(na)+'</span>':
-          '<button class="btn btn-sm" onclick="event.stopPropagation();kalKlick(heute)" style="font-size:11px;padding:3px 8px"><i class="ti ti-calendar-plus"></i> Planen</button>')+
-      '</td>';
-    // Letzte Bewertung
-    h+='<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(lr?'<span class="badge" style="background:'+lr.bg+';color:'+lr.color+'">'+lb+'</span>':'<span style="color:var(--text3)">—</span>')+'</td>';
-    // Ø Skill
-    h+='<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+
-      (skill!==null?
-        '<div style="display:flex;align-items:center;gap:6px">'+
-        '<div style="width:48px;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+skill+'%;background:'+skillCol+'"></div></div>'+
-        '<span style="font-size:12px;font-weight:600;color:'+skillCol+'">'+skill+'%</span></div>':
-        '<span style="color:var(--text3)">—</span>')+
-      '</td>';
-    // Alerts
-    h+='<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>';
-    // Aktion
-    h+='<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+
-      '<button class="btn btn-sm btn-primary" data-id="'+emp.id+'" onclick="event.stopPropagation();openSessionModal(parseInt(this.dataset.id))"><i class="ti ti-calendar-plus"></i> Planen</button>'+
-      '</td>';
-    h+='</tr>';
-  });
-  h+='</tbody></table></div></div></div>';
   ma.innerHTML=h;
 }
 
