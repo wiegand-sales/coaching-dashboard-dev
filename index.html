@@ -198,6 +198,7 @@ tr:hover td{background:var(--bg2);}
 .sb-group-body{overflow:hidden;transition:max-height .25s ease;}</style>
 </head>
 <body>
+<div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;text-align:center;font-size:12px;font-weight:600;padding:5px">DEV / STAGING</div>
 <div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;text-align:center;font-size:12px;font-weight:600;padding:5px">🚧 DEV / STAGING — <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#000;text-decoration:underline">→ Live</a></div>
 <div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;text-align:center;font-size:12px;font-weight:600;padding:5px">🚧 DEV / STAGING — <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#000;text-decoration:underline">→ Live</a></div>
 <div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;text-align:center;font-size:12px;font-weight:600;padding:5px">🚧 DEV / STAGING — <a href="https://wiegand-sales.github.io/coaching-dashboard/" style="color:#000;text-decoration:underline">→ Live</a></div>
@@ -1460,7 +1461,7 @@ function renderTeam(){
       TMETRICS.forEach(function(it){
         s+='<button class="'+(teamPerfMetric===it.k?'active':'')+'" data-m="'+it.k+'" onclick="setTeamMetric(this.dataset.m)">'+it.l+'</button>';
       });
-      s+='</div></div><div style="position:relative;height:160px"><canvas id="teamPerfChart"></canvas></div></div>';
+      s+='</div></div><div style="position:relative;height:260px"><canvas id="teamPerfChart"></canvas></div></div>';
       return s;
     })()
     // Alert Banner
