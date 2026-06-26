@@ -1506,7 +1506,7 @@ function renderTeam(){
       });
       return fbar+'</div>';
     })()
-    +'<div class="sec-title" style="margin-bottom:10px">Conversion Rates & Marge <span style="font-weight:400;color:var(--text3)">· CR als % aller Gespräche · Gut ≥ '+CR_GOOD+'%'+(days!==7?' · Pfeil = Trend vs. 7-Tage-Ø':'')+'</span></div>'
+    +'<div class="sec-title" style="margin-bottom:10px">SFP Performance <span style="font-weight:400;color:var(--text3)">· CR als % aller Gespräche · Gut ≥ '+CR_GOOD+'%'+(days!==7?' · Pfeil = Trend vs. 7-Tage-Ø':'')+'</span></div>'
     +'<div class="tbl" style="margin-bottom:24px"><table><thead><tr>'
     +'<th style="min-width:160px">Mitarbeiter</th>'
     +'<th style="width:105px;min-width:105px">CR OEM</th>'
@@ -1523,20 +1523,6 @@ function renderTeam(){
     +'<th>Inhalt des Coachings</th>'
     +'<th>Aktion</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
-    // Staff Cards
-    +'<div class="sec-title" style="margin-bottom:12px">Mitarbeiterkarten</div>'
-    +'<div class="team-grid">'+cards+'</div>'
-    // Coaching-Aufmerksamkeit
-    +'<div class="sec-title" style="margin-top:28px;margin-bottom:12px">Coaching-Aufmerksamkeit <span style="font-weight:400;color:var(--text3)">· Rot = über 14 Tage · Gelb = über 7 Tage ohne Session</span></div>'
-    +'<div class="tbl"><table><thead><tr>'
-    +'<th style="min-width:160px">Mitarbeiter</th>'
-    +'<th>Sessions</th>'
-    +'<th>Letzte Session</th>'
-    +'<th>Art des Coachings</th>'
-    +'<th>Inhalt des Coachings</th>'
-    +'<th>Alerts</th>'
-    +'<th>Aktion</th>'
-    +'</tr></thead><tbody>'+coachRows+'</tbody></table></div>'
     +'</div>';
 }
 
