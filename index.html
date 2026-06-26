@@ -1500,6 +1500,13 @@ function renderTeam(){
       var dSY=days!==7&&syD!==null&&tAvg7('crSuperYes')!==null?Math.round(syD)-Math.round(tAvg7('crSuperYes')):null;
       var dMY=days!==7&&myD!==null&&tAvg7('crMegaYes')!==null?Math.round(myD)-Math.round(tAvg7('crMegaYes')):null;
       var dMargin=days!==7?(totalMargin-totalMargin7):null;
+      // TW (Teilweise)
+      var twD=allP.length?allP.reduce(function(a,x){return a+(x.crTeilweise||0);},0)/allP.length:null;
+      var twTarget=KPI_TARGETS.crTeilweise?KPI_TARGETS.crTeilweise.val:25;
+      var twDir=KPI_TARGETS.crTeilweise?KPI_TARGETS.crTeilweise.dir:'lte';
+      var twOk=twD!==null&&(twDir==='lte'?twD<=twTarget:twD>=twTarget);
+      var twFarbe=twD!==null?(twOk?'var(--teal)':'var(--red)'):'var(--amber)';
+      var twVal=twD!==null?Math.round(twD)+'%':'—';
       // Farben basierend auf Zielerreichung
       var syTarget=KPI_TARGETS.crSuperYes.val;
       var myTarget=KPI_TARGETS.crMegaYes.val;
@@ -1507,7 +1514,7 @@ function renderTeam(){
       var myOk=myD!==null&&(KPI_TARGETS.crMegaYes.dir==='lte'?myD<=myTarget:myD>=myTarget);
       var syFarbe=syD!==null?(syOk?'var(--teal)':'var(--red)'):'var(--purple)';
       var myFarbe=myD!==null?(myOk?'var(--teal)':'var(--red)'):'var(--teal)';
-      return '<div class="g5" style="margin-bottom:20px">'        +kpiKarte(oemCol,'TEAM CR OEM',oemVal,(days!==7?'7d: '+(tAvg7('crOEM')!==null?Math.round(tAvg7('crOEM'))+'%':'—')+' · ':'')+'Ziel ≥ '+CR_GOOD+'%',oemD,oemCol,CR_GOOD,dOEM)        +kpiKarte(syFarbe,'TEAM SY',syVal,(days!==7?'7d: '+(tAvg7('crSuperYes')!==null?Math.round(tAvg7('crSuperYes'))+'%':'—')+' · ':'')+'Ziel '+( KPI_TARGETS.crSuperYes.dir==='gte'?'≥':'≤')+syTarget+'%',syD!==null?Math.round(syD):null,syFarbe,syTarget,dSY)        +kpiKarte(myFarbe,'TEAM MY',myVal,(days!==7?'7d: '+(tAvg7('crMegaYes')!==null?Math.round(tAvg7('crMegaYes'))+'%':'—')+' · ':'')+'Ziel '+( KPI_TARGETS.crMegaYes.dir==='gte'?'≥':'≤')+myTarget+'%',myD!==null?Math.round(myD):null,myFarbe,myTarget,dMY)        +kpiKarte('var(--blue)','ZUSÄTZL. MARGE','€'+totalMargin.toLocaleString('de-DE'),(days!==7?'7d: €'+totalMargin7.toLocaleString('de-DE')+' · ':'')+days+'-Tage Gesamt',null,null,null,null)        +kpiKarte('var(--red)','OFFENE ALERTS',totalAlerts+'',totalAlerts>0?'unter Zielwert':'keine Alerts',null,null,null,null)        +'</div>';
+      return '<div class="g5" style="margin-bottom:20px">'        +kpiKarte(oemCol,'TEAM CR OEM',oemVal,(days!==7?'7d: '+(tAvg7('crOEM')!==null?Math.round(tAvg7('crOEM'))+'%':'—')+' · ':'')+'Ziel ≥ '+CR_GOOD+'%',oemD,oemCol,CR_GOOD,dOEM)        +kpiKarte(twFarbe,'TEAM TW',twVal,(days!==7?'7d: '+(tAvg7('crTeilweise')!==null?Math.round(tAvg7('crTeilweise'))+'%':'—')+' · ':'')+'Ziel '+(twDir==='gte'?'≥':'≤')+twTarget+'%',twD,twFarbe,twTarget,null)        +kpiKarte(syFarbe,'TEAM SY',syVal,(days!==7?'7d: '+(tAvg7('crSuperYes')!==null?Math.round(tAvg7('crSuperYes'))+'%':'—')+' · ':'')+'Ziel '+( KPI_TARGETS.crSuperYes.dir==='gte'?'≥':'≤')+syTarget+'%',syD!==null?Math.round(syD):null,syFarbe,syTarget,dSY)        +kpiKarte(myFarbe,'TEAM MY',myVal,(days!==7?'7d: '+(tAvg7('crMegaYes')!==null?Math.round(tAvg7('crMegaYes'))+'%':'—')+' · ':'')+'Ziel '+( KPI_TARGETS.crMegaYes.dir==='gte'?'≥':'≤')+myTarget+'%',myD!==null?Math.round(myD):null,myFarbe,myTarget,dMY)        +kpiKarte('var(--blue)','ZUSÄTZL. MARGE','€'+totalMargin.toLocaleString('de-DE'),(days!==7?'7d: €'+totalMargin7.toLocaleString('de-DE')+' · ':'')+days+'-Tage Gesamt',null,null,null,null)        +kpiKarte('var(--red)','OFFENE ALERTS',totalAlerts+'',totalAlerts>0?'unter Zielwert':'keine Alerts',null,null,null,null)        +'</div>';
     })()
     // Team Performance Trend Chart
     +(function(){
